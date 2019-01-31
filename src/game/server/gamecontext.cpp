@@ -4279,12 +4279,7 @@ void CGameContext::TargetKilled()
 
 void CGameContext::FlagCollected()
 {
-	int PlayerCount = 0;
-	CPlayerIterator<PLAYERITER_INGAME> Iter(m_apPlayers);
-	while(Iter.Next())
-		PlayerCount++;
-
-	float t = (8-PlayerCount) / 8.0f;
+	float t = (8-Server()->GetActivePlayerCount()) / 8.0f;
 	if (t < 0.0f) 
 		t = 0.0f;
 
