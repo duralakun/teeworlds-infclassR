@@ -141,7 +141,8 @@ MACRO_CONFIG_INT(InfTurretEnablePlasma, inf_turret_enable_plasma, 1, 0, 1, CFGFL
 MACRO_CONFIG_INT(InfTurretReloadDuration, inf_turret_reload_duration, 1, 0, 10, CFGFLAG_SERVER, "ammo reload duration")
 MACRO_CONFIG_INT(InfTurretPlasmaLifeSpan, inf_turret_plasma_life_span, 3, 0, 10, CFGFLAG_SERVER, "plasma life span")
 MACRO_CONFIG_INT(InfTurretWarmUpDuration, inf_turret_warm_up_duration, 1, 0, 10, CFGFLAG_SERVER, "turret warm up duration")
-MACRO_CONFIG_INT(InfTurretDmgFactor, inf_turret_dmg_factor, 5, 0, 100, CFGFLAG_SERVER, "how much damage a turret does, 10 == grenade explosion")
+MACRO_CONFIG_INT(InfTurretDmgFactor, inf_turret_dmg_factor, 5, 0, 10, CFGFLAG_SERVER, "how much damage a plasma turret does, 10 == grenade explosion")
+MACRO_CONFIG_INT(InfTurretDmgHealthLaser, inf_turret_dmg_health_laser, 3, 0, 10, CFGFLAG_SERVER, "how much damage in life points a laser turret does")
 
 //SuperWeapons
 MACRO_CONFIG_INT(InfWhiteHoleMinimalKills, inf_white_hole_minimal_kills, 6, 0, 30, CFGFLAG_SERVER, "Minimal number of kills before white hole become available")

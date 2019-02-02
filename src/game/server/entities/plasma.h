@@ -16,7 +16,6 @@ public:
 // 	virtual vec2 GetPos(float Time);
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);
-	virtual void Explode();
 	
 public:
 	int m_Owner;
@@ -24,7 +23,6 @@ private:
 	int m_StartTick;
 	int m_LifeSpan;
 	vec2 m_Dir;
-	float m_Speed;
 	int m_Freeze;
 	bool m_Explosive;
 	int m_TrackedPlayer;

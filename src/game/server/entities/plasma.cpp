@@ -34,8 +34,8 @@ void CPlasma::Reset()
 // vec2 CPlasma::GetPos(float Time)
 // {
 // 	//float Speed = GameServer()->Tuning()->m_PlasmaRifleSpeed;
-// 	//float Speed = GameServer()->Tuning()->m_GrenadeSpeed;
-//	return CalcPos(m_Pos, m_Dir, 0.0f, m_Speed, Time);
+// 	float Speed = GameServer()->Tuning()->m_GrenadeSpeed;
+//	return CalcPos(m_Pos, m_Dir, 0.0f, Speed, Time);
 // }
 
 void CPlasma::Tick()
@@ -50,6 +50,7 @@ void CPlasma::Tick()
 	m_LifeSpan--;
 	
 	//position and collision calculation
+
  	//float Pt = (Server()->Tick()-m_StartTick-1)/(float)Server()->TickSpeed();
  	//float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
  	//vec2 PrevPos = GetPos(Pt);
@@ -69,13 +70,18 @@ void CPlasma::Tick()
 				pTarget->Freeze(3.0f, m_Owner, FREEZEREASON_FLASH);
 			}
 			
-			Explode();
+
+			if (m_Explosive) 
+			{
+				GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_NOINFECTION);
+			}
+			Reset();
 		}
 		else
 		{
-			m_Dir = normalize(pTarget->m_Pos - m_Pos);
-			m_Speed = clamp(Dist, 0.0f, 16.0f) * (1.0f - m_InitialAmount);
-			m_Pos += m_Dir*m_Speed;
+			vec2 Dir = normalize(pTarget->m_Pos - m_Pos);
+			m_Dir = Dir*clamp(Dist, 0.0f, 16.0f) * (1.0f - m_InitialAmount);
+			m_Pos += m_Dir;
 			
 			m_InitialAmount *= 0.98f;
 			
@@ -83,34 +89,30 @@ void CPlasma::Tick()
 
 			//if((Collide || GameLayerClipped(CurPos)))
 			//if(GameLayerClipped(m_Pos))
-			if(GameServer()->Collision()->CheckPoint(m_Pos.x, m_Pos.y)) // this only works as long as the projectile is not moving too fast
+			if(GameServer()->Collision()->CheckPoint(m_Pos.x, m_Pos.y)) // this only works as long as projectile is not moving to fast
 			{
-				Explode();
+					//GameServer()->CreateSound(CurPos, m_SoundImpact);
+					if (m_Explosive) 
+					{
+						GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_NOINFECTION);
+					}
+					Reset();
+					return;
 			}
 		}
 	} 
 	else //Target died before impact -> explode
 	{
-		Explode();
+		GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_NOINFECTION);
+		Reset();
 	}
 	
 }
 
-void CPlasma::Explode()
-{
-	//GameServer()->CreateSound(CurPos, m_SoundImpact);
-	if (m_Explosive) 
-	{
-		GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_HAMMER, false, TAKEDAMAGEMODE_NOINFECTION, g_Config.m_InfTurretDmgFactor*0.1f);
-	}
-	Reset();
-}
 
 void CPlasma::Snap(int SnappingClient)
 {
 	if (NetworkClipped(SnappingClient))
-		return;
-	if (Server()->GetClientAntiPing(SnappingClient))
 		return;
 	
 

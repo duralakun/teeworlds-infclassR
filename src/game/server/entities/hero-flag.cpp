@@ -61,6 +61,12 @@ void CHeroFlag::GiveGift(CCharacter* pHero)
 		pHero->GiveWeapon(WEAPON_GRENADE, -1);
 		pHero->GiveWeapon(WEAPON_RIFLE, -1);
 		SetCoolDown();
+		
+		if (pHero->m_TurretCount == 0)
+			pHero->GiveWeapon(WEAPON_HAMMER, -1);
+		pHero->m_TurretCount++;
+		GameServer()->SendChatTarget_Localization(pHero->GetPlayer()->GetCID(), CHATCATEGORY_SCORE, _("you found a turret, place it with hammer"), NULL);	
+		
 		return;
 	}
 
@@ -82,6 +88,12 @@ void CHeroFlag::GiveGift(CCharacter* pHero)
 		{
 			p->IncreaseHealth(10);
 			p->IncreaseArmor(10);
+			
+			if (p->m_TurretCount == 0)
+				p->GiveWeapon(WEAPON_HAMMER, -1);
+			p->m_TurretCount++;
+			GameServer()->SendChatTarget_Localization(p->GetPlayer()->GetCID(), CHATCATEGORY_SCORE, _("you found a turret, place it with hammer"), NULL);	
+			
 		}
 		
 		p->GiveGift(GIFT_HEROFLAG);
