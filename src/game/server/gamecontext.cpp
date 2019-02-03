@@ -4154,6 +4154,11 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 #endif
 }
 
+void CGameContext::OnStartRound()
+{
+	m_HeroGiftCooldown = 0;
+}
+
 void CGameContext::OnShutdown()
 {
 	//reset votes.
