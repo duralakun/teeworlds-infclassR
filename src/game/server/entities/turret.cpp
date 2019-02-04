@@ -32,7 +32,6 @@ CTurret::CTurret(CGameWorld *pGameWorld, vec2 Pos, int Owner, vec2 Direction, fl
 	}
 	
 	GameWorld()->InsertEntity(this);
-
 }
 
 CTurret::~CTurret()
@@ -86,13 +85,9 @@ void CTurret::Tick()
 			Reset();
 		}
 	}
-
-	
-	
 	
 	//reduce lifespan
 	m_LifeSpan--;
-	
 	
 	//reloading in progress
 	if(m_ReloadCounter > 0)
@@ -107,7 +102,6 @@ void CTurret::Tick()
 			
 		}
 		return; //some reload tick-cycles necessary
-		
 	} 
 
 	//Reloading finished, warm up in progress
@@ -126,9 +120,6 @@ void CTurret::Tick()
 	}
 	
 	//warmup finished, ready to find target
-	
-
-	//CCharacter *pChr = GameServer()->m_World.ClosestCharacter(m_Pos, 20.0f, 0);
 	
 	// Near character event
 	for(CCharacter *pChr = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); pChr; pChr = (CCharacter *)pChr->TypeNext())
@@ -157,7 +148,6 @@ void CTurret::Tick()
 						break;
 				}
 				
-				
 				GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 				
 				//Reload ammo
@@ -166,7 +156,6 @@ void CTurret::Tick()
 			}
 		}
 	}
-
 }
 
 void CTurret::Snap(int SnappingClient)
@@ -205,8 +194,6 @@ void CTurret::Snap(int SnappingClient)
 		pObj->m_FromX = (int)m_Pos.x;
 		pObj->m_FromY = (int)m_Pos.y;
 		pObj->m_StartTick = Server()->Tick();	
-		
-		
 		
 		return;
 	}

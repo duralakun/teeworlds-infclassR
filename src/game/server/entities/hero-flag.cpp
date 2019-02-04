@@ -16,7 +16,6 @@ CHeroFlag::CHeroFlag(CGameWorld *pGameWorld, int ClientID)
 	}
 	FindPosition();
 	GameWorld()->InsertEntity(this);
-	dbg_msg("HERO FLAG", "Create new hero flag");
 }
 
 CHeroFlag::~CHeroFlag()
@@ -133,7 +132,6 @@ void CHeroFlag::Tick()
 	}
 	else
 		m_CoolDownTick--;
-
 }
 
 void CHeroFlag::Snap(int SnappingClient)
