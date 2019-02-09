@@ -13,7 +13,6 @@ public:
 	int GetOwner() const;
 	
 	virtual void Reset();
-// 	virtual vec2 GetPos(float Time);
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);
 

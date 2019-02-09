@@ -31,11 +31,6 @@ void CPlasma::Reset()
 	GameServer()->m_World.DestroyEntity(this);
 }
 
-// vec2 CPlasma::GetPos(float Time)
-// {
-//	return CalcPos(m_Pos, m_Dir, 0.0f, m_Speed, Time);
-// }
-
 void CPlasma::Tick()
 {
 	
@@ -58,18 +53,14 @@ void CPlasma::Tick()
 			if (m_Freeze) 
 			{
 				pTarget->Freeze(3.0f, m_Owner, FREEZEREASON_FLASH);
+			} 
+			else 
+			{
+				Explode();
 			}
-			
-			Explode();
 		}
 		else
 		{
- 			//float Pt = (Server()->Tick()-m_StartTick-1)/(float)Server()->TickSpeed();
- 			//float Ct = (Server()->Tick()-m_StartTick)/(float)Server()->TickSpeed();
- 			//vec2 PrevPos = GetPos(Pt);
- 			//vec2 CurPos = GetPos(Ct);
- 			//int Collide = GameServer()->Collision()->IntersectLine(PrevPos, CurPos, &CurPos, NULL);
-		
 			m_Dir = normalize(pTarget->m_Pos - m_Pos);
 			m_Speed = clamp(Dist, 0.0f, 16.0f) * (1.0f - m_InitialAmount);
 			m_Pos += m_Dir*m_Speed;
@@ -77,9 +68,6 @@ void CPlasma::Tick()
 			m_InitialAmount *= 0.98f;
 			
 			//collision detection
-
-			//if((Collide || GameLayerClipped(CurPos)))
-			//if(GameLayerClipped(m_Pos))
 			if(GameServer()->Collision()->CheckPoint(m_Pos.x, m_Pos.y)) // this only works as long as the projectile is not moving too fast
 			{
 				Explode();
@@ -95,7 +83,7 @@ void CPlasma::Tick()
 
 void CPlasma::Explode() 
 {
-	//GameServer()->CreateSound(CurPos, m_SoundImpact);
+	
 	if (m_Explosive) 
 	{
 		GameServer()->CreateExplosion(m_Pos, m_Owner, WEAPON_GRENADE, false, TAKEDAMAGEMODE_NOINFECTION, g_Config.m_InfTurretDmgFactor*0.1f);
