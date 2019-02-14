@@ -834,6 +834,8 @@ void CCharacter::FireWeapon()
 				{
 					if(pIntersectMine) //Move the mine
 						GameServer()->m_World.DestroyEntity(pIntersectMine);
+					else if(Server()->GetActivePlayerCount() <= 2 && pOlderMine) // to few players, only allow 1 mine
+						GameServer()->m_World.DestroyEntity(pOlderMine);
 					else if(NbMine >= g_Config.m_InfMineLimit && pOlderMine)
 						GameServer()->m_World.DestroyEntity(pOlderMine);
 					
