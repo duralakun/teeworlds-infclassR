@@ -14,6 +14,9 @@ MACRO_CONFIG_INT(InfScatterGrenadeRadius, inf_scatter_grenade_radius, 4, 0, 30, 
 MACRO_CONFIG_INT(InfSoldierBombDmgRadius, inf_soldier_bomb_dmg_radius, 180, 0, 180, CFGFLAG_SERVER, "explosion radius of soldier bombs")
 MACRO_CONFIG_INT(InfSoldierBombDmgFactor, inf_soldier_bomb_dmg_factor, 10, 0, 10, CFGFLAG_SERVER, "damage of a single explosion, 10 == grenade explosion")
 
+MACRO_CONFIG_INT(InfScientistMineBaseDmg, inf_scientist_base_dmg, 5, 0, 1024, CFGFLAG_SERVER, "Base damage of scientist mines")
+
+
 //Walls
 MACRO_CONFIG_INT(InfBarrierLifeSpan, inf_barrier_lifespan, 30, 0, 100, CFGFLAG_SERVER, "Barrier lifespan")
 MACRO_CONFIG_INT(InfBarrierTimeReduce, inf_barrier_timereduce, 150, 0, 10000, CFGFLAG_SERVER, "Time to remove from a barrier lifespan when an infected dies (centisec)")
