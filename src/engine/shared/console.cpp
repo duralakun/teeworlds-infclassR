@@ -1,5 +1,6 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+/* Modifications Copyright 2019 The InfclassR (https://github.com/yavl/teeworlds-infclassR/) Authors */
 #include <new>
 
 #include <base/math.h>
@@ -11,6 +12,10 @@
 #include "config.h"
 #include "console.h"
 #include "linereader.h"
+#include "cfgvar_buffer.h"
+
+#include <iostream>
+#include <string.h>
 
 // todo: rework this
 
@@ -483,14 +488,18 @@ void CConsole::ExecuteFile(const char *pFilename)
 bool CConsole::Con_Echo(IResult *pResult, void *pUserData)
 {
 	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", pResult->GetString(0));
-	
 	return true;
 }
 
 bool CConsole::Con_Exec(IResult *pResult, void *pUserData)
 {
 	((CConsole*)pUserData)->ExecuteFile(pResult->GetString(0));
-	
+	return true;
+}
+
+bool CConsole::Con_PrintCfg(IResult *pResult, void *pUserData)
+{
+	CCfgVarBuffer::ConPrintCfg(((CConsole*)pUserData), pResult->GetString(0));
 	return true;
 }
 
@@ -716,6 +725,8 @@ CConsole::CConsole(int FlagMask)
 	// register some basic commands
 	Register("echo", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Echo, this, "Echo the text");
 	Register("exec", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Exec, this, "Execute the specified file");
+
+	Register("printcfg", "?r", CFGFLAG_SERVER, Con_PrintCfg, this, "Prints config vars and their values");
 
 	Register("toggle", "sii", CFGFLAG_SERVER|CFGFLAG_CLIENT, ConToggle, this, "Toggle config value");
 	Register("+toggle", "sii", CFGFLAG_CLIENT, ConToggleStroke, this, "Toggle config value via keypress");

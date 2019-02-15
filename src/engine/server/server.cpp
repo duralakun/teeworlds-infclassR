@@ -32,6 +32,7 @@
 
 #include "register.h"
 #include "server.h"
+#include <engine/shared/cfgvar_buffer.h>
 
 #include <cstring>
 /* INFECTION MODIFICATION START ***************************************/
@@ -2849,6 +2850,8 @@ int main(int argc, const char **argv) // ignore_convention
 
 	// restore empty config strings to their defaults
 	pConfig->RestoreStrings();
+
+	CCfgVarBuffer::Init();
 
 	pEngine->InitLogfile();
 
