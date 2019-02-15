@@ -13,6 +13,7 @@ CSoldierBomb::CSoldierBomb(CGameWorld *pGameWorld, vec2 Pos, int Owner)
 	m_StartTick = Server()->Tick();
 	m_Owner = Owner;
 	m_nbBomb = g_Config.m_InfSoldierBombs;
+	m_DmgRadius = (float)g_Config.m_InfSoldierBombDmgRadius;
 	
 	m_IDBomb.set_size(g_Config.m_InfSoldierBombs);
 	for(int i=0; i<m_IDBomb.size(); i++)
@@ -46,16 +47,16 @@ void CSoldierBomb::Explode()
 	for(int i=0; i<6; i++)
 	{
 		float angle = static_cast<float>(i)*2.0*pi/6.0;
-		vec2 expPos = m_Pos + vec2(90.0*cos(angle), 90.0*sin(angle));
-		GameServer()->CreateExplosion(expPos, m_Owner, WEAPON_HAMMER, false, TAKEDAMAGEMODE_SELFHARM);
+		vec2 expPos = m_Pos + vec2((m_DmgRadius/2)*cos(angle), (m_DmgRadius/2)*sin(angle));
+		GameServer()->CreateExplosion(expPos, m_Owner, WEAPON_HAMMER, false, TAKEDAMAGEMODE_SELFHARM,g_Config.m_InfSoldierBombDmgFactor*0.1f);
 	}
 	for(int i=0; i<12; i++)
 	{
 		float angle = static_cast<float>(i)*2.0*pi/12.0;
-		vec2 expPos = vec2(180.0*cos(angle), 180.0*sin(angle));
+		vec2 expPos = vec2(m_DmgRadius*cos(angle), m_DmgRadius*sin(angle));
 		if(dot(expPos, dir) <= 0)
 		{
-			GameServer()->CreateExplosion(m_Pos + expPos, m_Owner, WEAPON_HAMMER, false, TAKEDAMAGEMODE_SELFHARM);
+			GameServer()->CreateExplosion(m_Pos + expPos, m_Owner, WEAPON_HAMMER, false, TAKEDAMAGEMODE_SELFHARM,g_Config.m_InfSoldierBombDmgFactor*0.1f);
 		}
 	}
 	

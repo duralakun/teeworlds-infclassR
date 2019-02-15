@@ -11,6 +11,8 @@ MACRO_CONFIG_INT(InfMercLove, inf_merc_love, 1, 0, 1, CFGFLAG_SERVER, "Enables l
 MACRO_CONFIG_INT(InfMineLimit, inf_mine_limit, 2, 0, 1024, CFGFLAG_SERVER, "Maximum number of mines per player")
 MACRO_CONFIG_INT(InfMineRadius, inf_mine_radius, 46, 0, 1024, CFGFLAG_SERVER, "Radius of mines")
 MACRO_CONFIG_INT(InfScatterGrenadeRadius, inf_scatter_grenade_radius, 4, 0, 30, CFGFLAG_SERVER, "Radius of scatter grenade explosion")
+MACRO_CONFIG_INT(InfSoldierBombDmgRadius, inf_soldier_bomb_dmg_radius, 180, 0, 180, CFGFLAG_SERVER, "explosion radius of soldier bombs")
+MACRO_CONFIG_INT(InfSoldierBombDmgFactor, inf_soldier_bomb_dmg_factor, 10, 0, 10, CFGFLAG_SERVER, "damage of a single explosion, 10 == grenade explosion")
 
 //Walls
 MACRO_CONFIG_INT(InfBarrierLifeSpan, inf_barrier_lifespan, 30, 0, 100, CFGFLAG_SERVER, "Barrier lifespan")
