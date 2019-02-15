@@ -22,11 +22,12 @@ MACRO_CONFIG_INT(InfBarrierDamage, inf_barrier_damage, 0, 0, 20, CFGFLAG_SERVER,
 MACRO_CONFIG_INT(InfBioLaserDamage, inf_bio_laser_damage, 10, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
 MACRO_CONFIG_INT(InfBioLaserEnergy, inf_bio_laser_energy, 400, 0, 1000, CFGFLAG_SERVER, "Energy of biologist laser")
 
-//Poison and damage
+//Poison and damage and heal
 MACRO_CONFIG_INT(InfPoisonDamage, inf_poison_damage, 8, 0, 1024, CFGFLAG_SERVER, "Damage deals by the poison grenades")
 MACRO_CONFIG_INT(InfSlimeDuration, inf_slime_duration, 10, 0, 10000, CFGFLAG_SERVER, "How long Slug-Slime will stay in game (in seconds)")
 MACRO_CONFIG_INT(InfSlimePoisonDuration, inf_slime_poison_duration, 5, 0, 10000, CFGFLAG_SERVER, "How long Slug-Slime will deal damage to humans (in seconds), BUG: when set to 1 second slime will deal damage very fast")
 MACRO_CONFIG_INT(InfSlimeHealRate, inf_slime_heal_rate, 2, 0, 10000, CFGFLAG_SERVER, "Slug-Slime heals infected for X hearts every second")
+MACRO_CONFIG_INT(InfMedicGrenadeRadius, inf_medic_grenade_radius, 4, 0, 30, CFGFLAG_SERVER, "Radius of medic heal grenade")
 
 //Selfharm
 MACRO_CONFIG_INT(InfScientistTpSelfharm, inf_scientist_tp_selfharm, 0, 0, 10000, CFGFLAG_SERVER, "Self damage on each teleportation")

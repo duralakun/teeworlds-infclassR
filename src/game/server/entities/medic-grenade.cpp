@@ -121,6 +121,6 @@ void CMedicGrenade::Snap(int SnappingClient)
 	
 void CMedicGrenade::Explode()
 {
-	new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, 4, GROWINGEXPLOSIONEFFECT_HEAL_HUMANS);
+	new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, g_Config.m_InfMedicGrenadeRadius, GROWINGEXPLOSIONEFFECT_HEAL_HUMANS);
 	GameServer()->m_World.DestroyEntity(this);
 }
