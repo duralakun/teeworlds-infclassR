@@ -12,7 +12,7 @@ CScientistMine::CScientistMine(CGameWorld *pGameWorld, vec2 Pos, int Owner)
 {
 	m_Pos = Pos;
 	GameWorld()->InsertEntity(this);
-	m_DetectionRadius = 60.0f;
+	m_DetectionRadius = (float)g_Config.m_InfMineRadius + 14.0f;
 	m_StartTick = Server()->Tick();
 	m_Owner = Owner;
 	
