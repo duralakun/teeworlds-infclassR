@@ -29,6 +29,7 @@ class CCfgVarBuffer
 public:
 	static void Init();
 	static void ConPrintCfg(CConsole* pConsole, const char *pCfgName);
+	static bool IsConfigVar(const char* pStr);
 
 private:
 	static CfgVar *m_CfgVars;

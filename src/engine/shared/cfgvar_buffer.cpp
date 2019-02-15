@@ -118,6 +118,15 @@ void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
 	}
 }
 
+bool CCfgVarBuffer::IsConfigVar(const char* pStr)
+{
+	for (int i = 0; i < m_CfgVarsCounter; i++)
+	{
+		if (str_comp_nocase(m_CfgVars[i].m_pScriptName, pStr) == 0) return true;
+	}
+	return false;
+}
+
 /*
 // puts all config vars and their values inside a string
 // returns false if it runs out of memory

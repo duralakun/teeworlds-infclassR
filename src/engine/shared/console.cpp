@@ -499,7 +499,55 @@ bool CConsole::Con_Exec(IResult *pResult, void *pUserData)
 
 bool CConsole::Con_PrintCfg(IResult *pResult, void *pUserData)
 {
+	char aBuff[256];
+	if (pResult->GetString(0)[0] == 0)
+		str_format(aBuff, 256, "Printing all config variables :");
+	else
+		str_format(aBuff, 256, "Printing all config variables containing '%s' :", pResult->GetString(0));
+	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "- - - - - - - - - - - - - - - - - - - - - - - -");
+	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuff);
+
 	CCfgVarBuffer::ConPrintCfg(((CConsole*)pUserData), pResult->GetString(0));
+	return true;
+}
+
+bool CConsole::Con_PrintCmd(IResult *pResult, void *pUserData)
+{
+	char aBuff[256];
+	if (pResult->GetString(0)[0] == 0)
+		str_format(aBuff, 256, "Printing all commands :");
+	else
+		str_format(aBuff, 256, "Printing all commands containing '%s' :", pResult->GetString(0));
+	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "- - - - - - - - - - - - - - - - - - - - - - - -");
+	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuff);
+
+	const char *pCmdName = pResult->GetString(0);
+	for(CCommand *pCommand = ((CConsole*)pUserData)->m_pFirstCommand; pCommand; pCommand = pCommand->m_pNext)
+	{
+		if (CCfgVarBuffer::IsConfigVar(pCommand->m_pName)) continue;
+
+		bool contains = false;
+		int m = 0;
+		for (int k = 0; k < 512; k++)
+		{
+			if (pCmdName[m] == 0)
+			{
+				contains = true;
+				break;
+			}
+			if (pCommand->m_pName[k] == 0)
+				break;
+			if (pCmdName[m] == pCommand->m_pName[k])
+				m++;
+			else 
+				m = 0;
+		}
+		if (!contains) continue;
+
+		char lineBuff[512];
+		str_format(lineBuff, 512, "%s %s -> %s", pCommand->m_pName, pCommand->m_pUsage, pCommand->m_pHelp);
+		((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
+	}
 	return true;
 }
 
@@ -726,7 +774,8 @@ CConsole::CConsole(int FlagMask)
 	Register("echo", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Echo, this, "Echo the text");
 	Register("exec", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Exec, this, "Execute the specified file");
 
-	Register("printcfg", "?r", CFGFLAG_SERVER, Con_PrintCfg, this, "Prints config vars and their values");
+	Register("printcfg", "?r", CFGFLAG_SERVER, Con_PrintCfg, this, "Search for config vars that contain r and print their names and values");
+	Register("printcmd", "?r", CFGFLAG_SERVER, Con_PrintCmd, this, "Search for commandos that contain r and print them");
 
 	Register("toggle", "sii", CFGFLAG_SERVER|CFGFLAG_CLIENT, ConToggle, this, "Toggle config value");
 	Register("+toggle", "sii", CFGFLAG_CLIENT, ConToggleStroke, this, "Toggle config value via keypress");

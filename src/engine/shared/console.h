@@ -57,6 +57,7 @@ class CConsole : public IConsole
 	static bool Con_Echo(IResult *pResult, void *pUserData);
 	static bool Con_Exec(IResult *pResult, void *pUserData);
 	static bool Con_PrintCfg(IResult *pResult, void *pUserData);
+	static bool Con_PrintCmd(IResult *pResult, void *pUserData);
 	static bool ConToggle(IResult *pResult, void *pUser);
 	static bool ConToggleStroke(IResult *pResult, void *pUser);
 	static bool ConModCommandAccess(IResult *pResult, void *pUser);
