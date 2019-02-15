@@ -16,6 +16,10 @@ MACRO_CONFIG_INT(InfBarrierLifeSpan, inf_barrier_lifespan, 30, 0, 100, CFGFLAG_S
 MACRO_CONFIG_INT(InfBarrierTimeReduce, inf_barrier_timereduce, 150, 0, 10000, CFGFLAG_SERVER, "Time to remove from a barrier lifespan when an infected dies (centisec)")
 MACRO_CONFIG_INT(InfLooperBarrierTimeReduce, inf_looper_barrier_timereduce, 350, 0, 10000, CFGFLAG_SERVER, "Time to remove from a barrier lifespan when an infected dies (centisec)")
 
+//Laser stuff
+MACRO_CONFIG_INT(InfBioLaserDamage, inf_bio_laser_damage, 10, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
+MACRO_CONFIG_INT(InfBioLaserEnergy, inf_bio_laser_energy, 400, 0, 1000, CFGFLAG_SERVER, "Energy of biologist laser")
+
 //Poison and damage
 MACRO_CONFIG_INT(InfPoisonDamage, inf_poison_damage, 8, 0, 1024, CFGFLAG_SERVER, "Damage deals by the poison grenades")
 MACRO_CONFIG_INT(InfSlimeDuration, inf_slime_duration, 10, 0, 10000, CFGFLAG_SERVER, "How long Slug-Slime will stay in game (in seconds)")

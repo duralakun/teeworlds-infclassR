@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
+#include <engine/shared/config.h>
 #include "biologist-laser.h"
 
 CBiologistLaser::CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Direction, int Owner, int Dmg)
@@ -10,7 +11,7 @@ CBiologistLaser::CBiologistLaser(CGameWorld *pGameWorld, vec2 Pos, vec2 Directio
 	m_Dmg = Dmg;
 	m_Pos = Pos;
 	m_Owner = Owner;
-	m_Energy = 400.0f;
+	m_Energy = (float)g_Config.m_InfBioLaserEnergy;
 	m_Dir = Direction;
 	m_Bounces = 0;
 	m_EvalTick = 0;
@@ -29,7 +30,7 @@ void CBiologistLaser::HitCharacter(vec2 From, vec2 To)
 		float Len = distance(p->m_Pos, IntersectPos);
 		if(Len < p->m_ProximityRadius)
 		{
-			p->TakeDamage(vec2(0.f, 0.f), 10, m_Owner, WEAPON_RIFLE, TAKEDAMAGEMODE_NOINFECTION);
+			p->TakeDamage(vec2(0.f, 0.f), g_Config.m_InfBioLaserDamage, m_Owner, WEAPON_RIFLE, TAKEDAMAGEMODE_NOINFECTION);
 			break;
 		}
 	}
