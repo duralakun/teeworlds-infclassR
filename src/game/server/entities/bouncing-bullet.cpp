@@ -67,6 +67,7 @@ void CBouncingBullet::Tick()
 	{
 		if(OwnerChar)
 		{
+			//TODO parametrise this in weapon config
 			if(OwnerChar->IsHuman() && TargetChr->IsHuman())
 				TargetChr->TakeDamage(m_Direction * 0.001f, (random_prob(0.33f) ? 2 : 1), m_Owner, WEAPON_SHOTGUN, TAKEDAMAGEMODE_NOINFECTION);
 			else
