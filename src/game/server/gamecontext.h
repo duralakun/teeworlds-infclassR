@@ -78,6 +78,7 @@ class CGameContext : public IGameServer
 	int m_TargetToKill;
 	int m_TargetToKillCoolDown;
 	int m_HeroGiftCooldown;
+	int m_NerfFactor;
 
 	#ifndef CONF_NOGEOLOCATION
 	Geolocation* geolocation;
@@ -175,6 +176,7 @@ public:
 	CVoteOptionServer *m_pVoteOptionLast;
 
 	// helper functions
+	void NerfWeapons();
 	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
 	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION, float DamageFactor = 1.0f);
 	void CreateExplosionDisk(vec2 Pos, float InnerRadius, float DamageRadius, int Damage, float Force, int Owner, int Weapon, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION);

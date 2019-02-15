@@ -50,6 +50,7 @@ void CGameContext::Construct(int Resetting)
 	m_TargetToKill = -1;
 	m_TargetToKillCoolDown = 0;
 	m_HeroGiftCooldown = 0;
+	m_NerfFactor = 100;
 	
 	m_ChatResponseTargetID = -1;
 
@@ -200,6 +201,11 @@ void CGameContext::SetProbabilities(std::vector<int> value) {
 	g_Config.m_InfProbaSpider = value[7];
 	g_Config.m_InfGhoulThreshold = value[8];
 	g_Config.m_InfGhoulStomachSize = value[9];
+}
+
+void CGameContext::NerfWeapons()
+{
+	// nothing to do right now
 }
 
 void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
@@ -939,6 +945,15 @@ void CGameContext::OnTick()
 	if(m_HeroGiftCooldown > 0)
 		m_HeroGiftCooldown--;
 
+	// Low player count weapon nerf
+	if (Server()->GetActivePlayerCount() <= 3)
+	{
+		m_NerfFactor = 30;
+		NerfWeapons();
+	}
+	else
+		m_NerfFactor = 100;
+	
 	if(m_TargetToKillCoolDown > 0)
 		m_TargetToKillCoolDown--;
 	
