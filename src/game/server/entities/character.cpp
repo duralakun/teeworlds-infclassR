@@ -1377,7 +1377,7 @@ void CCharacter::FireWeapon()
 					GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 				}
 				else if (GetClass() == PLAYERCLASS_LOOPER) {
-					Damage = 5;
+					Damage = g_Config.m_InfLooperLaserDmg;
 					new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach*0.7f, m_pPlayer->GetCID(), Damage);
 					GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 				}

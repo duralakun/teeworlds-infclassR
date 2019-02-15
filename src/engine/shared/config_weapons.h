@@ -30,6 +30,7 @@ MACRO_CONFIG_INT(InfBioLaserDamage, inf_bio_laser_damage, 10, 0, 20, CFGFLAG_SER
 MACRO_CONFIG_INT(InfBioLaserEnergy, inf_bio_laser_energy, 400, 0, 1000, CFGFLAG_SERVER, "Energy of biologist laser")
 MACRO_CONFIG_INT(InfSniperLaserBaseDmg, inf_sniper_laser_base_dmg, 10, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
 MACRO_CONFIG_INT(InfSniperLockedLaserDmg, inf_sniper_locked_laser_dmg, 30, 0, 40, CFGFLAG_SERVER, "Damage in hearts")
+MACRO_CONFIG_INT(InfLooperLaserDmg, inf_looper_laser_dmg, 5, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
 
 //Poison and damage and heal
 MACRO_CONFIG_INT(InfPoisonDamage, inf_poison_damage, 8, 0, 1024, CFGFLAG_SERVER, "Damage deals by the poison grenades")
