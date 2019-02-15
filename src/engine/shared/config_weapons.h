@@ -20,8 +20,9 @@ MACRO_CONFIG_INT(InfBarrierTimeReduce, inf_barrier_timereduce, 150, 0, 10000, CF
 MACRO_CONFIG_INT(InfLooperBarrierTimeReduce, inf_looper_barrier_timereduce, 350, 0, 10000, CFGFLAG_SERVER, "Time to remove from a barrier lifespan when an infected dies (centisec)")
 MACRO_CONFIG_INT(InfBarrierDamage, inf_barrier_damage, 0, 0, 20, CFGFLAG_SERVER, "0 kills zombies, bigger zero deals damage")
 
-
-//Laser stuff
+//Rifles
+MACRO_CONFIG_INT(InfShotgunBlowback, inf_shotgun_blowback, 2, 0, 15, CFGFLAG_SERVER, "shotgun blowback")
+MACRO_CONFIG_INT(InfMedicShotgunBlowback, inf_medic_shotgun_blowback, 10, 0, 15, CFGFLAG_SERVER, "medic shotgun blowback")
 MACRO_CONFIG_INT(InfBioLaserDamage, inf_bio_laser_damage, 10, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
 MACRO_CONFIG_INT(InfBioLaserEnergy, inf_bio_laser_energy, 400, 0, 1000, CFGFLAG_SERVER, "Energy of biologist laser")
 

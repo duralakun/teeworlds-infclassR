@@ -1115,9 +1115,9 @@ void CCharacter::FireWeapon()
 			CMsgPacker Msg(NETMSGTYPE_SV_EXTRAPROJECTILE);
 			Msg.AddInt(ShotSpread*2+1);
 
-			float Force = 2.0f;
+			float Force = (float)g_Config.m_InfShotgunBlowback;
 			if(GetClass() == PLAYERCLASS_MEDIC)
-				Force = 10.0f;
+				Force = (float)g_Config.m_InfMedicShotgunBlowback; 
 				
 			for(int i = -ShotSpread; i <= ShotSpread; ++i)
 			{
