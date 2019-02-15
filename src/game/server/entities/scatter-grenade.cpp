@@ -141,11 +141,11 @@ void CScatterGrenade::Explode()
 {
 	if(m_IsFlashGrenade)
 	{
-		new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, 4, GROWINGEXPLOSIONEFFECT_FREEZE_INFECTED);
+		new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, g_Config.m_InfScatterGrenadeRadius, GROWINGEXPLOSIONEFFECT_FREEZE_INFECTED);
 	}
 	else
 	{
-		new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, 4, GROWINGEXPLOSIONEFFECT_POISON_INFECTED);
+		new CGrowingExplosion(GameWorld(), m_ActualPos, m_ActualDir, m_Owner, g_Config.m_InfScatterGrenadeRadius, GROWINGEXPLOSIONEFFECT_POISON_INFECTED);
 	}
 	
 	GameServer()->m_World.DestroyEntity(this);
