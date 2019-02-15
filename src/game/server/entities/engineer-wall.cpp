@@ -25,6 +25,7 @@ CEngineerWall::CEngineerWall(CGameWorld *pGameWorld, vec2 Pos1, vec2 Pos2, int O
 	GameWorld()->InsertEntity(this);
 	m_EndPointID = Server()->SnapNewID();
 	m_WallFlashTicks = 0;
+	m_Damage = g_Config.m_InfBarrierDamage;
 }
 
 CEngineerWall::~CEngineerWall()
@@ -66,6 +67,7 @@ void CEngineerWall::Tick()
 					for(CCharacter *pHook = (CCharacter*) GameWorld()->FindFirst(CGameWorld::ENTTYPE_CHARACTER); pHook; pHook = (CCharacter *)pHook->TypeNext())
 					{
 						if(
+							//TODO no free points if damage is turned on
 							pHook->GetPlayer() &&
 							pHook->IsHuman() &&
 							pHook->m_Core.m_HookedPlayer == p->GetPlayer()->GetCID() &&
@@ -94,8 +96,10 @@ void CEngineerWall::Tick()
 						m_LifeSpan -= LifeSpanReducer;
 					}
 				}
-				
-				p->Die(m_Owner, WEAPON_HAMMER);
+				if (m_Damage > 0)
+					p->TakeDamage(vec2(0.0f, 0.0f), m_Damage, m_Owner, WEAPON_SHOTGUN, TAKEDAMAGEMODE_NOINFECTION);
+				else
+					p->Die(m_Owner, WEAPON_HAMMER);
 			}
 		}
 	}
