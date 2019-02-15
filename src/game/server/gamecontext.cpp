@@ -15,6 +15,9 @@
 #include "gamemodes/mod.h"
 #include <algorithm>
 
+//for exceptions
+#include <stdexcept>
+
 enum
 {
 	RESET,
@@ -175,7 +178,7 @@ int CGameContext::RandomZombieToWitch() {
 
 void CGameContext::SetAvailabilities(std::vector<int> value) {
 	if (value.empty())
-		value = std::vector<int>(10); //increased by 1 human class from 9 to 10
+		value = std::vector<int>(10);
 	g_Config.m_InfEnableBiologist = value[0];
 	g_Config.m_InfEnableEngineer = value[1];
 	g_Config.m_InfEnableHero = value[2];
@@ -205,7 +208,69 @@ void CGameContext::SetProbabilities(std::vector<int> value) {
 
 void CGameContext::NerfWeapons()
 {
-	// nothing to do right now
+	//Simple nerf without formula (TODO)
+	m_NerfFactor = 100;
+	g_Config.m_InfMedicShotgunBlowback = 4;		//Force
+	g_Config.m_InfShotgunFireDelay = 700;		//milli-seconds
+	g_Config.m_InfScientistMineBaseDmg = 1;		//hearts
+	g_Config.m_InfMineLimit = 1;
+	g_Config.m_InfLooperLaserDmg = 4; 			//hearts
+	g_Config.m_InfSlowMotionWallDuration = 20; 	//centi-seconds
+	g_Config.m_InfLooperBarrierLifeSpan = 20; 	//seconds
+	g_Config.m_InfBarrierLifeSpan = 13; 		//seconds
+	g_Config.m_InfSoldierBombDmgFactor = 5; 	//10 == grenade dmg
+	g_Config.m_InfSniperLockedLaserDmg = 16; 	//hearts
+	g_Config.m_InfSniperLaserBaseDmg = 6; 		//hearts
+	g_Config.m_InfMercGunAmmoRegenTime = 300; 	//milli-seconds
+	g_Config.m_InfMercMaxGunAmmo = 30; 			// bullets
+	g_Config.m_InfBarrierDamage = 7; 			// hearts
+	g_Config.m_InfNinjaJump = 1;
+}
+
+void CGameContext::SaveWeaponConfig() {
+	
+	std::vector<int> configVector = {
+		//if order is changed, change it also in ResetWeaponConfig(), errors will be fatal!
+		g_Config.m_InfMedicShotgunBlowback,
+		g_Config.m_InfShotgunFireDelay,
+		g_Config.m_InfScientistMineBaseDmg,
+		g_Config.m_InfMineLimit,
+		g_Config.m_InfLooperLaserDmg,
+		g_Config.m_InfSlowMotionWallDuration,
+		g_Config.m_InfLooperBarrierLifeSpan,
+		g_Config.m_InfBarrierLifeSpan,
+		g_Config.m_InfSoldierBombDmgFactor,
+		g_Config.m_InfSniperLockedLaserDmg,
+		g_Config.m_InfSniperLaserBaseDmg,
+		g_Config.m_InfMercGunAmmoRegenTime,
+		g_Config.m_InfMercMaxGunAmmo,
+		g_Config.m_InfBarrierDamage,
+		g_Config.m_InfNinjaJump
+	};
+	
+	m_DefaultWeaponConfig = configVector;
+	
+}
+
+void CGameContext::ResetWeaponConfig(std::vector<int> value) {
+	if (value.empty())
+		throw std::invalid_argument( "Could not ResetWeaponConfig(), vector was not filled" );
+	
+	g_Config.m_InfMedicShotgunBlowback = value[0];
+	g_Config.m_InfShotgunFireDelay = value[1];
+	g_Config.m_InfScientistMineBaseDmg = value[2];
+	g_Config.m_InfMineLimit = value[3];
+	g_Config.m_InfLooperLaserDmg = value[4];
+	g_Config.m_InfSlowMotionWallDuration = value[5];
+	g_Config.m_InfLooperBarrierLifeSpan = value[6];
+	g_Config.m_InfBarrierLifeSpan = value[7];
+	g_Config.m_InfSoldierBombDmgFactor = value[8];
+	g_Config.m_InfSniperLockedLaserDmg = value[9];
+	g_Config.m_InfSniperLaserBaseDmg = value[10];
+	g_Config.m_InfMercGunAmmoRegenTime = value[11];
+	g_Config.m_InfMercMaxGunAmmo = value[12];
+	g_Config.m_InfBarrierDamage = value[13];
+	g_Config.m_InfNinjaJump  = value[14];
 }
 
 void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
@@ -945,14 +1010,14 @@ void CGameContext::OnTick()
 	if(m_HeroGiftCooldown > 0)
 		m_HeroGiftCooldown--;
 
-	// Low player count weapon nerf
+	// Low player count leads to nerfed weapons
 	if (Server()->GetActivePlayerCount() <= 3)
 	{
-		m_NerfFactor = 30;
+		SaveWeaponConfig();
 		NerfWeapons();
-	}
-	else
-		m_NerfFactor = 100;
+	} 
+	else 
+		ResetWeaponConfig(m_DefaultWeaponConfig);
 	
 	if(m_TargetToKillCoolDown > 0)
 		m_TargetToKillCoolDown--;

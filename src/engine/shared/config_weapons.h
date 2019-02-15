@@ -33,7 +33,7 @@ MACRO_CONFIG_INT(InfSniperLockedLaserDmg, inf_sniper_locked_laser_dmg, 30, 0, 40
 MACRO_CONFIG_INT(InfLooperLaserDmg, inf_looper_laser_dmg, 5, 0, 20, CFGFLAG_SERVER, "Damage in hearts")
 MACRO_CONFIG_INT(InfMercGunAmmoRegenTime, inf_merc_gun_ammo_regen_time, 125, 20, 2000, CFGFLAG_SERVER, "Regen time in milli-seconds")
 MACRO_CONFIG_INT(InfMercMaxGunAmmo, inf_merc_max_gun_ammo, 40, 5, 80, CFGFLAG_SERVER, "Maximal Gun-Jetpack ammunition")
-MACRO_CONFIG_INT(InfShotgunFireDelay, inf_shotgun_fire_delay, 500, 100, 2000, CFGFLAG_SERVER, "Fire delay in milli-seconds")
+MACRO_CONFIG_INT(InfShotgunFireDelay, inf_shotgun_fire_delay, 250, 100, 2000, CFGFLAG_SERVER, "Fire delay in milli-seconds")
 
 //Poison and damage and heal
 MACRO_CONFIG_INT(InfPoisonDamage, inf_poison_damage, 8, 0, 1024, CFGFLAG_SERVER, "Damage deals by the poison grenades")

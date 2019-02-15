@@ -559,7 +559,7 @@ int CServer::Init()
 	SetFireDelay(INFWEAPON_NONE, 0);
 	SetFireDelay(INFWEAPON_HAMMER, 125);
 	SetFireDelay(INFWEAPON_GUN, 125);
-	SetFireDelay(INFWEAPON_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_SHOTGUN, 2*g_Config.m_InfShotgunFireDelay);
 	SetFireDelay(INFWEAPON_GRENADE, 500);
 	SetFireDelay(INFWEAPON_RIFLE, 800);
 	SetFireDelay(INFWEAPON_NINJA, 800);
@@ -569,9 +569,9 @@ int CServer::Init()
 	SetFireDelay(INFWEAPON_SCIENTIST_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
 	SetFireDelay(INFWEAPON_MEDIC_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
 	SetFireDelay(INFWEAPON_MEDIC_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
-	SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, 250);
-	SetFireDelay(INFWEAPON_HERO_SHOTGUN, 250);
-	SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, 250);
+	SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_HERO_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, g_Config.m_InfShotgunFireDelay);
 	SetFireDelay(INFWEAPON_BIOLOGIST_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
 	SetFireDelay(INFWEAPON_LOOPER_RIFLE, 250);
 	SetFireDelay(INFWEAPON_LOOPER_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
