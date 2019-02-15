@@ -1363,9 +1363,9 @@ void CCharacter::FireWeapon()
 				if(GetClass() == PLAYERCLASS_SNIPER)
 				{
 					if(m_PositionLocked)
-						Damage = 30;
+						Damage = g_Config.m_InfSniperLockedLaserDmg; //30
 					else
-						Damage = random_int(10, 13);
+						Damage = g_Config.m_InfSniperLaserBaseDmg;
 					new CLaser(GameWorld(), m_Pos, Direction, GameServer()->Tuning()->m_LaserReach, m_pPlayer->GetCID(), Damage);
 					GameServer()->CreateSound(m_Pos, SOUND_RIFLE_FIRE);
 				}
