@@ -33,6 +33,9 @@
 #include "register.h"
 #include "server.h"
 
+//for exceptions
+#include <stdexcept>
+
 #include <cstring>
 /* INFECTION MODIFICATION START ***************************************/
 #include <fstream>
@@ -556,10 +559,14 @@ int CServer::Init()
 #endif
 		
 /* INFECTION MODIFICATION START ***************************************/
+
+//if(g_Config.m_InfShotgunFireDelay == 0)
+//	throw std::invalid_argument( "Config var is not initialized" );
+
 	SetFireDelay(INFWEAPON_NONE, 0);
 	SetFireDelay(INFWEAPON_HAMMER, 125);
 	SetFireDelay(INFWEAPON_GUN, 125);
-	SetFireDelay(INFWEAPON_SHOTGUN, 2*g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_SHOTGUN, (2*g_Config.m_InfShotgunFireDelay) );
 	SetFireDelay(INFWEAPON_GRENADE, 500);
 	SetFireDelay(INFWEAPON_RIFLE, 800);
 	SetFireDelay(INFWEAPON_NINJA, 800);

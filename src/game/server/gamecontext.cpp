@@ -6,6 +6,7 @@
 #include <engine/map.h>
 #include <engine/console.h>
 #include <engine/storage.h>
+#include <engine/server.h>
 #include <engine/server/roundstatistics.h>
 #include <engine/server/sql_server.h>
 #include "gamecontext.h"
@@ -225,6 +226,13 @@ void CGameContext::NerfWeapons()
 	g_Config.m_InfMercMaxGunAmmo = 30; 			// bullets
 	g_Config.m_InfBarrierDamage = 7; 			// hearts
 	g_Config.m_InfNinjaJump = 1;
+	
+	Server()->SetFireDelay(INFWEAPON_SHOTGUN, 2*g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_HERO_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetAmmoRegenTime(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercGunAmmoRegenTime);
 }
 
 void CGameContext::SaveWeaponConfig() {
@@ -271,6 +279,13 @@ void CGameContext::ResetWeaponConfig(std::vector<int> value) {
 	g_Config.m_InfMercMaxGunAmmo = value[12];
 	g_Config.m_InfBarrierDamage = value[13];
 	g_Config.m_InfNinjaJump  = value[14];
+	
+	Server()->SetFireDelay(INFWEAPON_SHOTGUN, 2*g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_HERO_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	Server()->SetAmmoRegenTime(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercGunAmmoRegenTime);
 }
 
 void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
