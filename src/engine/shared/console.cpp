@@ -9,13 +9,11 @@
 #include <engine/storage.h>
 #include <engine/shared/protocol.h>
 
+#include "string.h"
 #include "config.h"
 #include "console.h"
 #include "linereader.h"
 #include "cfgvar_buffer.h"
-
-#include <iostream>
-#include <string.h>
 
 // todo: rework this
 
@@ -367,6 +365,8 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientID, bo
 					}
 					else
 					{
+						CCfgVarBuffer::OnExecuteLine(pCommand->m_pName);
+
 						bool ValideArguments = pCommand->m_pfnCallback(&Result, pCommand->m_pUserData);
 						if(!ValideArguments)
 						{
@@ -514,7 +514,7 @@ bool CConsole::Con_PrintCfg(IResult *pResult, void *pUserData)
 bool CConsole::Con_PrintCmd(IResult *pResult, void *pUserData)
 {
 	char aBuff[256];
-	if (pResult->GetString(0)[0] == 0)
+	if (!pResult->GetString(0) || pResult->GetString(0)[0] == 0)
 		str_format(aBuff, 256, "Printing all commands :");
 	else
 		str_format(aBuff, 256, "Printing all commands containing '%s' :", pResult->GetString(0));
@@ -526,26 +526,14 @@ bool CConsole::Con_PrintCmd(IResult *pResult, void *pUserData)
 	{
 		if (CCfgVarBuffer::IsConfigVar(pCommand->m_pName)) continue;
 
-		bool contains = false;
-		int m = 0;
-		for (int k = 0; k < 512; k++)
-		{
-			if (pCmdName[m] == 0)
-			{
-				contains = true;
-				break;
-			}
-			if (pCommand->m_pName[k] == 0)
-				break;
-			if (pCmdName[m] == pCommand->m_pName[k])
-				m++;
-			else 
-				m = 0;
-		}
-		if (!contains) continue;
+		if (pCmdName && pCmdName[0] != 0)
+			if (!strstr(pCommand->m_pName, pCmdName)) continue; // continue if command doesnt contain pCmdName
 
 		char lineBuff[512];
-		str_format(lineBuff, 512, "%s %s -> %s", pCommand->m_pName, pCommand->m_pUsage, pCommand->m_pHelp);
+		if (pCommand->m_pUsage && pCommand->m_pUsage[0] != 0)
+			str_format(lineBuff, 512, "%s %s -> %s", pCommand->m_pName, pCommand->m_pUsage, pCommand->m_pHelp);
+		else 
+			str_format(lineBuff, 512, "%s -> %s", pCommand->m_pName, pCommand->m_pHelp);
 		((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
 	}
 	return true;
@@ -774,14 +762,16 @@ CConsole::CConsole(int FlagMask)
 	Register("echo", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Echo, this, "Echo the text");
 	Register("exec", "r", CFGFLAG_SERVER|CFGFLAG_CLIENT, Con_Exec, this, "Execute the specified file");
 
-	Register("printcfg", "?r", CFGFLAG_SERVER, Con_PrintCfg, this, "Search for config vars that contain r and print their names and values");
-	Register("printcmd", "?r", CFGFLAG_SERVER, Con_PrintCmd, this, "Search for commandos that contain r and print them");
+	Register("print_cfg", "?s", CFGFLAG_SERVER, Con_PrintCfg, this, "Search for config vars that contain X and print their names and values");
+	Register("print_cmd", "?s", CFGFLAG_SERVER, Con_PrintCmd, this, "Search for commandos that contain X and print them");
 
 	Register("toggle", "sii", CFGFLAG_SERVER|CFGFLAG_CLIENT, ConToggle, this, "Toggle config value");
 	Register("+toggle", "sii", CFGFLAG_CLIENT, ConToggleStroke, this, "Toggle config value via keypress");
 
 	Register("mod_command", "s?i", CFGFLAG_SERVER, ConModCommandAccess, this, "Specify command accessibility for moderators");
 	Register("mod_status", "", CFGFLAG_SERVER, ConModCommandStatus, this, "List all commands which are accessible for moderators");
+
+	//Register("testt", "", CFGFLAG_SERVER, CCfgVarBuffer::ConResetCfgAtNextRoundEnd_Start, this, "testt");
 
 	// TODO: this should disappear
 	#define MACRO_CONFIG_INT(Name,ScriptName,Def,Min,Max,Flags,Desc) \

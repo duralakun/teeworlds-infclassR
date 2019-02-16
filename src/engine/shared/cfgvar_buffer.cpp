@@ -3,27 +3,120 @@
 /* Modifications Copyright 2019 The InfclassR (https://github.com/yavl/teeworlds-infclassR/) Authors */
 
 #include <base/system.h>
+#include <engine/console.h>
 #include "cfgvar_buffer.h"
 #include "config.h"
 #include "console.h"
-#include <iostream>
+#include "string.h"
 
-int CCfgVarBuffer::m_CfgVarsCounter;
-CCfgVarBuffer::CfgVar *CCfgVarBuffer::m_CfgVars;
+int CCfgVarBuffer::m_CfgVarsNum;
+CCfgVarBuffer::CfgVar *CCfgVarBuffer::m_pCfgVars;
+
+bool CCfgVarBuffer::m_BackupRoundCfgVars;
+int CCfgVarBuffer::m_ResetNextRoundCounter;
+CCfgVarBuffer::CfgVarBackup *CCfgVarBuffer::m_pCfgVarRoundBackup;
+
+CCfgVarBuffer::CfgVarBackup::CfgVarBackup()
+{
+	m_pCfgVarsTemp = new CfgVarTemp[m_CfgVarsNum];
+	for (int i = 0; i < m_CfgVarsNum; i++)
+	{
+		m_pCfgVarsTemp[i].active = false;
+		m_pCfgVarsTemp[i].m_pStrValue = NULL;
+	}
+}
+
+CCfgVarBuffer::CfgVarBackup::~CfgVarBackup()
+{
+	for (int i = 0; i < m_CfgVarsNum; i++)
+	{
+		delete[] m_pCfgVarsTemp[i].m_pStrValue;
+	}
+	delete[] m_pCfgVarsTemp;
+}
+
+void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName)
+{
+	int i = 0;
+	for ( ; i < m_CfgVarsNum; i++)
+		if (strcmp(m_pCfgVars[i].m_pScriptName, pCfgVarScriptName) == 0) break;
+	if (i >= m_CfgVarsNum)
+	{
+		dbg_msg("CfgVarBuffer", "Error: Could not find config variable '%s'", pCfgVarScriptName);
+		return;
+	}
+	if (m_pCfgVarsTemp[i].active) // var is already backed up
+		return;
+	m_pCfgVarsTemp[i].active = true;
+	// copy data to backup buffer
+	if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
+	{
+		m_pCfgVarsTemp[i].m_IntValue = *m_pCfgVars[i].m_pIntValue;
+	}
+	else if (m_pCfgVars[i].m_Type == CFG_TYPE_STR)
+	{
+		if (!m_pCfgVars[i].m_pStrValue)
+			return;
+		int StrSize = strlen(m_pCfgVars[i].m_pStrValue) + 1;
+		m_pCfgVarsTemp[i].m_pStrValue = new char[StrSize];
+		str_copy(m_pCfgVarsTemp[i].m_pStrValue, m_pCfgVars[i].m_pStrValue, StrSize);
+	}
+	else 
+		dbg_msg("CfgVarBuffer", "Error: config variable '%s' has an unknown type", pCfgVarScriptName);
+}
+
+void CCfgVarBuffer::CfgVarBackup::ConsolePrint(CConsole *pConsole, const char *pCfgName)
+{
+	char aBuff[256];
+	if (!pCfgName || pCfgName[0] == 0)
+		str_format(aBuff, 256, "Printing all cfg vars changed for this round :");
+	else
+		str_format(aBuff, 256, "Printing all cfg vars changed for this round containing '%s' :", pCfgName);
+	pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "- - - - - - - - - - - - - - - - - - - - - - - -");
+	pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuff);
+
+	for (int i = 0; i < m_CfgVarsNum; i++)
+	{
+		if (!m_pCfgVarsTemp[i].active) continue;
+		if (pCfgName && pCfgName[0] != 0 && !strstr(m_pCfgVars[i].m_pScriptName, pCfgName)) continue; // check if pCfgName is a substring of m_pScriptName
+		char lineBuff[512];
+		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
+			str_format(lineBuff, 512, "%s %i -> %i", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_IntValue, *m_pCfgVars[i].m_pIntValue);
+		else
+			str_format(lineBuff, 512, "%s %s -> %s", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_pStrValue ,m_pCfgVars[i].m_pStrValue);
+		pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
+	}
+}
+
+void CCfgVarBuffer::CfgVarBackup::Apply()
+{
+	for (int i = 0; i < m_CfgVarsNum; i++)
+	{
+		if (!m_pCfgVarsTemp[i].active) continue;
+		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
+			*m_pCfgVars[i].m_pIntValue = m_pCfgVarsTemp[i].m_IntValue;
+		else 
+			str_copy(m_pCfgVars[i].m_pStrValue, m_pCfgVarsTemp[i].m_pStrValue, strlen(m_pCfgVarsTemp[i].m_pStrValue)+1);
+	}
+}
 
 void CCfgVarBuffer::Init()
 {
-	m_CfgVarsCounter = 0;
+	m_BackupRoundCfgVars = false;
+	m_ResetNextRoundCounter = 0;
+	delete m_pCfgVarRoundBackup;
+	m_pCfgVarRoundBackup = NULL;
 
 	// Count how many config variables there are
+	m_CfgVarsNum = 0;
 	#define MACRO_CONFIG_INT(Name,ScriptName,Def,Min,Max,Flags,Desc) \
 	{ \
-		m_CfgVarsCounter++; \
+		m_CfgVarsNum++; \
 	}
 
 	#define MACRO_CONFIG_STR(Name,ScriptName,Len,Def,Flags,Desc) \
 	{ \
-		m_CfgVarsCounter++; \
+		m_CfgVarsNum++; \
 	}
 
 	#include "config_variables.h"
@@ -32,35 +125,32 @@ void CCfgVarBuffer::Init()
 	#undef MACRO_CONFIG_INT
 	#undef MACRO_CONFIG_STR
 
-	m_CfgVars = new CfgVar[m_CfgVarsCounter];
+	m_pCfgVars = new CfgVar[m_CfgVarsNum];
 	int tCount = 0;
 
-	// read all config variables and save their information to m_CfgVars
+	// read all config variables and save their information to m_pCfgVars
 	#define MACRO_CFGVAR_SAVE_NAME(ScriptName) \
 	{ \
-		int i = 0; \
-		for ( ; i < 256; i++) \
-			if (#ScriptName[i] == 0) break; \
+		int i = strlen(#ScriptName); \
 		i++; \
-		m_CfgVars[tCount].m_pScriptName = new char[i]; \
-		m_CfgVars[tCount].m_ScriptNameLength = i; \
-		std::cout << "JDBG " << #ScriptName << " i: " << i << "\n"; \
-		str_copy(m_CfgVars[tCount].m_pScriptName, #ScriptName, i); \
-		m_CfgVars[tCount].m_pScriptName[i-1] = 0; \
+		m_pCfgVars[tCount].m_pScriptName = new char[i]; \
+		m_pCfgVars[tCount].m_ScriptNameLength = i; \
+		str_copy(m_pCfgVars[tCount].m_pScriptName, #ScriptName, i); \
+		m_pCfgVars[tCount].m_pScriptName[i-1] = 0; \
 	}
 
 	#define MACRO_CONFIG_INT(Name,ScriptName,Def,Min,Max,Flags,Desc) \
 	{ \
-		m_CfgVars[tCount].m_Type = CFG_TYPE_INT; \
-		m_CfgVars[tCount].m_pIntValue = &g_Config.m_##Name; \
+		m_pCfgVars[tCount].m_Type = CFG_TYPE_INT; \
+		m_pCfgVars[tCount].m_pIntValue = &g_Config.m_##Name; \
 		MACRO_CFGVAR_SAVE_NAME(ScriptName); \
 		tCount++; \
 	} 
 
 	#define MACRO_CONFIG_STR(Name,ScriptName,Len,Def,Flags,Desc) \
 	{ \
-		m_CfgVars[tCount].m_Type = CFG_TYPE_STR; \
-		m_CfgVars[tCount].m_pStrValue = g_Config.m_##Name; \
+		m_pCfgVars[tCount].m_Type = CFG_TYPE_STR; \
+		m_pCfgVars[tCount].m_pStrValue = g_Config.m_##Name; \
 		MACRO_CFGVAR_SAVE_NAME(ScriptName); \
 		tCount++; \
 	}
@@ -72,59 +162,84 @@ void CCfgVarBuffer::Init()
 	#undef MACRO_CONFIG_STR
 }
 
-
-void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
+void CCfgVarBuffer::RegisterConsoleCommands(CConsole *pConsole)
 {
-	if (*pCfgName == 0) 
-	{
-		// print all config variables and their values
-		for (int i = 0; i < m_CfgVarsCounter; i++)
-		{
-			char lineBuff[512];
-			if (m_CfgVars[i].m_Type == CFG_TYPE_INT)
-				str_format(lineBuff, 512, "%s %i", m_CfgVars[i].m_pScriptName, *m_CfgVars[i].m_pIntValue);
-			else
-				str_format(lineBuff, 512, "%s %s", m_CfgVars[i].m_pScriptName, m_CfgVars[i].m_pStrValue);
-			pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
-		}
-		return;
-	}
-
-	// search for config vars that contain pCfgName and print them and their values
-	for (int i = 0; i < m_CfgVarsCounter; i++)
-	{
-		bool contains = false;
-		int m = 0;
-		for (int k = 0; k < m_CfgVars[i].m_ScriptNameLength; k++)
-		{
-			if (pCfgName[m] == m_CfgVars[i].m_pScriptName[k])
-				m++;
-			else 
-				m = 0;
-			if (pCfgName[m] == 0)
-			{
-				contains = true;
-				break;
-			}
-		}
-		if (!contains) continue;
-
-		char lineBuff[512];
-		if (m_CfgVars[i].m_Type == CFG_TYPE_INT)
-			str_format(lineBuff, 512, "%s %i", m_CfgVars[i].m_pScriptName, *m_CfgVars[i].m_pIntValue);
-		else
-			str_format(lineBuff, 512, "%s %s", m_CfgVars[i].m_pScriptName, m_CfgVars[i].m_pStrValue);
-		pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
-	}
+	pConsole->Register("resetcfg_nextround_start", "", CFGFLAG_SERVER, ConResetCfgNextRound_Start, pConsole, 
+		"cfg var changes between this start command and the stop command will be reset at the end of next round");
+	pConsole->Register("resetcfg_nextround_end", "", CFGFLAG_SERVER, ConResetCfgNextRound_End, pConsole, 
+		"cfg var changes between the start command and this stop command will be reset at the end of next round");
+	pConsole->Register("print_round_cfg", "?s", CFGFLAG_SERVER, ConPrintRoundCfg, pConsole, 
+		"show round specifc config vars, format: config_var original_value -> temp_value");
 }
 
 bool CCfgVarBuffer::IsConfigVar(const char* pStr)
 {
-	for (int i = 0; i < m_CfgVarsCounter; i++)
+	for (int i = 0; i < m_CfgVarsNum; i++)
 	{
-		if (str_comp_nocase(m_CfgVars[i].m_pScriptName, pStr) == 0) return true;
+		if (str_comp_nocase(m_pCfgVars[i].m_pScriptName, pStr) == 0) return true;
 	}
 	return false;
+}
+
+void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
+{
+	// search for config vars that contain pCfgName and print them and their values - if pCfgName is NULL print all vars
+	for (int i = 0; i < m_CfgVarsNum; i++)
+	{
+		if (pCfgName && pCfgName[0] != 0)
+			if (!strstr(m_pCfgVars[i].m_pScriptName, pCfgName)) continue;
+
+		char lineBuff[512];
+		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
+			str_format(lineBuff, 512, "%s %i", m_pCfgVars[i].m_pScriptName, *m_pCfgVars[i].m_pIntValue);
+		else
+			str_format(lineBuff, 512, "%s %s", m_pCfgVars[i].m_pScriptName, m_pCfgVars[i].m_pStrValue);
+		pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
+	}
+}
+
+bool CCfgVarBuffer::ConResetCfgNextRound_Start(IConsole::IResult *pResult, void *pUserData)
+{
+	//((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "Reset upcomming config variables at the end of next round");
+	m_BackupRoundCfgVars = true;
+	m_ResetNextRoundCounter = 2;
+	if (!m_pCfgVarRoundBackup)
+		m_pCfgVarRoundBackup = new CfgVarBackup();
+	return true;
+}
+
+bool CCfgVarBuffer::ConResetCfgNextRound_End(IConsole::IResult *pResult, void *pUserData)
+{
+	m_BackupRoundCfgVars = false;
+	return true;
+}
+
+bool CCfgVarBuffer::ConPrintRoundCfg(IConsole::IResult *pResult, void *pUserData)
+{
+	if (!m_pCfgVarRoundBackup)
+	{
+		((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "There are no special config vars for this round");
+		return true;
+	}
+	m_pCfgVarRoundBackup->ConsolePrint((CConsole*)pUserData, pResult->GetString(0));
+	return true;
+}
+
+void CCfgVarBuffer::OnExecuteLine(const char* pCfgVarScriptName)
+{
+	if (!m_BackupRoundCfgVars) return;
+	if (!IsConfigVar(pCfgVarScriptName)) return;
+	m_pCfgVarRoundBackup->Add(pCfgVarScriptName);
+}
+
+void CCfgVarBuffer::OnRoundStart()
+{
+	if (m_ResetNextRoundCounter <= 0) return;
+	m_ResetNextRoundCounter--;
+	if (m_ResetNextRoundCounter > 0) return;
+	m_pCfgVarRoundBackup->Apply();
+	delete m_pCfgVarRoundBackup;
+	m_pCfgVarRoundBackup = NULL;
 }
 
 /*
@@ -132,13 +247,13 @@ bool CCfgVarBuffer::IsConfigVar(const char* pStr)
 // returns false if it runs out of memory
 bool CCfgVarBuffer::GetCfgStr(char *pStr, int StrSize)
 {
-	for (int i = 0; i < m_CfgVarsCounter; i++)
+	for (int i = 0; i < m_CfgVarsNum; i++)
 	{
 		char lineBuff[512];
-		if (m_CfgVars[i].m_Type == CFG_TYPE_INT)
-			str_format(lineBuff, 512, "%s %i \n", m_CfgVars[i].m_pScriptName, *m_CfgVars[i].m_pIntValue);
+		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
+			str_format(lineBuff, 512, "%s %i \n", m_pCfgVars[i].m_pScriptName, *m_pCfgVars[i].m_pIntValue);
 		else
-			str_format(lineBuff, 512, "%s %s \n", m_CfgVars[i].m_pScriptName, m_CfgVars[i].m_pStrValue);
+			str_format(lineBuff, 512, "%s %s \n", m_pCfgVars[i].m_pScriptName, m_pCfgVars[i].m_pStrValue);
 		int m = 0;
 		for ( ; m < 512; m++)
 			if (lineBuff[m] == 0) break;
@@ -157,6 +272,4 @@ bool CCfgVarBuffer::GetCfgStr(char *pStr, int StrSize)
 	return true;
 }
 */
-
-
 
