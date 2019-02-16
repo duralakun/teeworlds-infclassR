@@ -33,9 +33,6 @@
 #include "register.h"
 #include "server.h"
 
-//for exceptions
-#include <stdexcept>
-
 #include <cstring>
 /* INFECTION MODIFICATION START ***************************************/
 #include <fstream>

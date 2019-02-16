@@ -15,9 +15,6 @@
 #include "gamemodes/mod.h"
 #include <algorithm>
 
-//for exceptions
-#include <stdexcept>
-
 enum
 {
 	RESET,
