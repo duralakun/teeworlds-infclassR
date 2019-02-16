@@ -1399,7 +1399,7 @@ void CCharacter::FireWeapon()
 
 	if(!m_ReloadTimer)
 	{
-		m_ReloadTimer = Server()->GetFireDelay(GetInfWeaponID(m_ActiveWeapon)) * Server()->TickSpeed() / 1000;
+		m_ReloadTimer = GameServer()->GetFireDelay(GetInfWeaponID(m_ActiveWeapon)) * Server()->TickSpeed() / 1000;
 	}
 }
 
@@ -1510,8 +1510,8 @@ void CCharacter::HandleWeapons()
 	for(int i=WEAPON_GUN; i<=WEAPON_RIFLE; i++)
 	{
 		int InfWID = GetInfWeaponID(i);
-		int AmmoRegenTime = Server()->GetAmmoRegenTime(InfWID);
-		int MaxAmmo = Server()->GetMaxAmmo(GetInfWeaponID(i));
+		int AmmoRegenTime = GameServer()->GetAmmoRegenTime(InfWID);
+		int MaxAmmo = GameServer()->GetMaxAmmo(GetInfWeaponID(i));
 		
 		if(InfWID == INFWEAPON_NINJA_GRENADE)
 			MaxAmmo = min(MaxAmmo + m_NinjaAmmoBuff, 10);
@@ -1593,7 +1593,7 @@ void CCharacter::RemoveAllGun()
 bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 {
 	int InfWID = GetInfWeaponID(Weapon);
-	int MaxAmmo = Server()->GetMaxAmmo(InfWID);
+	int MaxAmmo = GameServer()->GetMaxAmmo(InfWID);
 	
 	if(InfWID == INFWEAPON_NINJA_GRENADE)
 		MaxAmmo = min(MaxAmmo + m_NinjaAmmoBuff, 10);
@@ -3301,7 +3301,7 @@ void CCharacter::Snap(int SnappingClient)
 /* INFECTION MODIFICATION START ***************************************/
 	if(GetInfWeaponID(m_ActiveWeapon) == INFWEAPON_MERCENARY_GUN)
 	{
-		pCharacter->m_AmmoCount /= (Server()->GetMaxAmmo(INFWEAPON_MERCENARY_GUN)/10);
+		pCharacter->m_AmmoCount /= (GameServer()->GetMaxAmmo(INFWEAPON_MERCENARY_GUN)/10);
 	}
 /* INFECTION MODIFICATION END *****************************************/
 
