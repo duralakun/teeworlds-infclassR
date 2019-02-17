@@ -86,6 +86,7 @@ void CCfgVarBuffer::CfgVarBackup::ConsolePrint(CConsole *pConsole, const char *p
 	{
 		if (!m_pCfgVarsTemp[i].active) continue;
 		if (pCfgName && pCfgName[0] != 0 && !strstr(m_pCfgVars[i].m_pScriptName, pCfgName)) continue; // check if pCfgName is a substring of m_pScriptName
+		if (strstr(m_pCfgVars[i].m_pScriptName, "password")) continue; // dont print passwords
 		char lineBuff[512];
 		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
 			str_format(lineBuff, 512, "%s %i -> %i", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_IntValue, *m_pCfgVars[i].m_pIntValue);
@@ -217,6 +218,7 @@ void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
 	{
 		if (pCfgName && pCfgName[0] != 0)
 			if (!strstr(m_pCfgVars[i].m_pScriptName, pCfgName)) continue;
+		if (strstr(m_pCfgVars[i].m_pScriptName, "password")) continue; // dont print passwords
 
 		char lineBuff[512];
 		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
