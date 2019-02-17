@@ -35,7 +35,7 @@ CCfgVarBuffer::CfgVarBackup::~CfgVarBackup()
 	delete[] m_pCfgVarsTemp;
 }
 
-void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName)
+void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName, bool OverrideOld)
 {
 	int i = 0;
 	for ( ; i < m_CfgVarsNum; i++)
@@ -45,7 +45,7 @@ void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName)
 		dbg_msg("CfgVarBuffer", "Error: Could not find config variable '%s'", pCfgVarScriptName);
 		return;
 	}
-	if (m_pCfgVarsTemp[i].active) // var is already backed up
+	if (!OverrideOld && m_pCfgVarsTemp[i].active) // var is already backed up
 		return;
 	m_pCfgVarsTemp[i].active = true;
 	// copy data to backup buffer
@@ -211,8 +211,12 @@ bool CCfgVarBuffer::ConResetCfgNextRound_Start(IConsole::IResult *pResult, void 
 	//((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "Reset upcomming config variables at the end of next round");
 	m_BackupRoundCfgVars = true;
 	m_ResetNextRoundCounter = 2;
-	if (!m_pCfgVarRoundBackup)
-		m_pCfgVarRoundBackup = new CfgVarBackup();
+	if (m_pCfgVarRoundBackup)
+	{
+		m_pCfgVarRoundBackup->Apply();
+		delete m_pCfgVarRoundBackup;
+	}
+	m_pCfgVarRoundBackup = new CfgVarBackup();
 	return true;
 }
 
@@ -226,28 +230,42 @@ bool CCfgVarBuffer::ConPrintRoundCfg(IConsole::IResult *pResult, void *pUserData
 {
 	if (!m_pCfgVarRoundBackup)
 	{
-		((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "There are no special config vars for this round");
+		((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "Round cfg vars are disabled, you can activate them with resetcfg_nextround_start");
 		return true;
 	}
 	m_pCfgVarRoundBackup->ConsolePrint((CConsole*)pUserData, pResult->GetString(0));
 	return true;
 }
 
-void CCfgVarBuffer::OnExecuteLine(const char* pCfgVarScriptName)
+void CCfgVarBuffer::BeforeSetCfg(const char* pCfgVarScriptName)
 {
 	if (!m_BackupRoundCfgVars) return;
+	if (!m_pCfgVarRoundBackup) return;
 	if (!IsConfigVar(pCfgVarScriptName)) return;
 	m_pCfgVarRoundBackup->Add(pCfgVarScriptName);
 }
 
+void CCfgVarBuffer::AfterSetCfg(const char* pCfgVarScriptName)
+{
+	if (m_BackupRoundCfgVars) return;
+	if (!m_pCfgVarRoundBackup) return;
+	if (!IsConfigVar(pCfgVarScriptName)) return;
+	m_pCfgVarRoundBackup->Add(pCfgVarScriptName, true);
+}
+
 void CCfgVarBuffer::OnRoundStart()
 {
-	if (m_ResetNextRoundCounter <= 0) return;
+	if (m_ResetNextRoundCounter <= 0)
+		return;
 	m_ResetNextRoundCounter--;
 	if (m_ResetNextRoundCounter > 0) return;
+
 	m_pCfgVarRoundBackup->Apply();
+
+	// reset
 	delete m_pCfgVarRoundBackup;
 	m_pCfgVarRoundBackup = NULL;
+	m_BackupRoundCfgVars = false;
 }
 
 /*

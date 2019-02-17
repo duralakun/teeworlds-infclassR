@@ -365,7 +365,7 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientID, bo
 					}
 					else
 					{
-						CCfgVarBuffer::OnExecuteLine(pCommand->m_pName);
+						CCfgVarBuffer::BeforeSetCfg(pCommand->m_pName);
 
 						bool ValideArguments = pCommand->m_pfnCallback(&Result, pCommand->m_pUserData);
 						if(!ValideArguments)
@@ -377,6 +377,8 @@ void CConsole::ExecuteLineStroked(int Stroke, const char *pStr, int ClientID, bo
 							Print(OUTPUT_LEVEL_STANDARD, "Console", "Invalid arguments.");
 							Print(OUTPUT_LEVEL_STANDARD, "Console", aBuf);
 						}
+
+						CCfgVarBuffer::AfterSetCfg(pCommand->m_pName);
 					}
 				}
 			}

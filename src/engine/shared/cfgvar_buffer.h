@@ -40,7 +40,7 @@ class CCfgVarBuffer
 	public:
 		CfgVarBackup();
 		~CfgVarBackup();
-		void Add(const char* pCfgVarScriptName);
+		void Add(const char* pCfgVarScriptName, bool OverrideOld = false);
 		void ConsolePrint(CConsole *pConsole, const char *pCfgName = NULL);
 		void Apply();
 
@@ -58,7 +58,8 @@ public:
 	static bool ConResetCfgNextRound_End(IConsole::IResult *pResult, void *pUserData);
 	static bool ConPrintRoundCfg(IConsole::IResult *pResult, void *pUserData);
 
-	static void OnExecuteLine(const char* pCfgVarScriptName);
+	static void BeforeSetCfg(const char* pCfgVarScriptName);
+	static void AfterSetCfg(const char* pCfgVarScriptName);
 	static void OnRoundStart();
 
 private:
