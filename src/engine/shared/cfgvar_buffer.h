@@ -54,8 +54,8 @@ public:
 	static bool IsConfigVar(const char* pStr);
 
 	static void ConPrintCfg(CConsole* pConsole, const char *pCfgName);
-	static bool ConResetCfgNextRound_Start(IConsole::IResult *pResult, void *pUserData);
-	static bool ConResetCfgNextRound_End(IConsole::IResult *pResult, void *pUserData);
+	static bool ConSetCfgForNextRound_Begin(IConsole::IResult *pResult, void *pUserData);
+	static bool ConSetCfgForNextRound_End(IConsole::IResult *pResult, void *pUserData);
 	static bool ConPrintRoundCfg(IConsole::IResult *pResult, void *pUserData);
 
 	static void BeforeSetCfg(const char* pCfgVarScriptName);

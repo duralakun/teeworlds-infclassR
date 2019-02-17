@@ -164,10 +164,10 @@ void CCfgVarBuffer::Init()
 
 void CCfgVarBuffer::RegisterConsoleCommands(CConsole *pConsole)
 {
-	pConsole->Register("resetcfg_nextround_start", "", CFGFLAG_SERVER, ConResetCfgNextRound_Start, pConsole, 
-		"cfg var changes between this start command and the stop command will be reset at the end of next round");
-	pConsole->Register("resetcfg_nextround_end", "", CFGFLAG_SERVER, ConResetCfgNextRound_End, pConsole, 
-		"cfg var changes between the start command and this stop command will be reset at the end of next round");
+	pConsole->Register("set_cfg_for_nextround_begin", "", CFGFLAG_SERVER, ConSetCfgForNextRound_Begin, pConsole, 
+		"cfg var changes between this begin command and the end command will be reset at the end of next round");
+	pConsole->Register("set_cfg_for_nextround_end", "", CFGFLAG_SERVER, ConSetCfgForNextRound_End, pConsole, 
+		"cfg var changes between the begin command and this end command will be reset at the end of next round");
 	pConsole->Register("print_round_cfg", "?s", CFGFLAG_SERVER, ConPrintRoundCfg, pConsole, 
 		"show round specifc config vars, format: config_var original_value -> temp_value");
 }
@@ -206,7 +206,7 @@ void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
 	}
 }
 
-bool CCfgVarBuffer::ConResetCfgNextRound_Start(IConsole::IResult *pResult, void *pUserData)
+bool CCfgVarBuffer::ConSetCfgForNextRound_Begin(IConsole::IResult *pResult, void *pUserData)
 {
 	//((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "Reset upcomming config variables at the end of next round");
 	m_BackupRoundCfgVars = true;
@@ -220,7 +220,7 @@ bool CCfgVarBuffer::ConResetCfgNextRound_Start(IConsole::IResult *pResult, void 
 	return true;
 }
 
-bool CCfgVarBuffer::ConResetCfgNextRound_End(IConsole::IResult *pResult, void *pUserData)
+bool CCfgVarBuffer::ConSetCfgForNextRound_End(IConsole::IResult *pResult, void *pUserData)
 {
 	m_BackupRoundCfgVars = false;
 	return true;
@@ -255,8 +255,7 @@ void CCfgVarBuffer::AfterSetCfg(const char* pCfgVarScriptName)
 
 void CCfgVarBuffer::OnRoundStart()
 {
-	if (m_ResetNextRoundCounter <= 0)
-		return;
+	if (m_ResetNextRoundCounter <= 0) return;
 	m_ResetNextRoundCounter--;
 	if (m_ResetNextRoundCounter > 0) return;
 
