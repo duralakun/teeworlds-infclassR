@@ -47,6 +47,8 @@ void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName, bool Overri
 	}
 	if (!OverrideOld && m_pCfgVarsTemp[i].active) // var is already backed up
 		return;
+	if (OverrideOld && !m_pCfgVarsTemp[i].active) // nothing to override here
+		return;
 	m_pCfgVarsTemp[i].active = true;
 	// copy data to backup buffer
 	if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
@@ -55,6 +57,11 @@ void CCfgVarBuffer::CfgVarBackup::Add(const char* pCfgVarScriptName, bool Overri
 	}
 	else if (m_pCfgVars[i].m_Type == CFG_TYPE_STR)
 	{
+		if (m_pCfgVarsTemp[i].m_pStrValue)
+		{
+			delete[] m_pCfgVarsTemp[i].m_pStrValue;
+			m_pCfgVarsTemp[i].m_pStrValue = NULL;
+		}
 		if (!m_pCfgVars[i].m_pStrValue)
 			return;
 		int StrSize = strlen(m_pCfgVars[i].m_pStrValue) + 1;
@@ -83,7 +90,16 @@ void CCfgVarBuffer::CfgVarBackup::ConsolePrint(CConsole *pConsole, const char *p
 		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
 			str_format(lineBuff, 512, "%s %i -> %i", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_IntValue, *m_pCfgVars[i].m_pIntValue);
 		else
-			str_format(lineBuff, 512, "%s %s -> %s", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_pStrValue ,m_pCfgVars[i].m_pStrValue);
+		{
+			if (m_pCfgVarsTemp[i].m_pStrValue && m_pCfgVars[i].m_pStrValue)
+				str_format(lineBuff, 512, "%s %s -> %s", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_pStrValue, m_pCfgVars[i].m_pStrValue);
+			else if (m_pCfgVarsTemp[i].m_pStrValue && !m_pCfgVars[i].m_pStrValue)
+				str_format(lineBuff, 512, "%s %s -> NULL", m_pCfgVars[i].m_pScriptName, m_pCfgVarsTemp[i].m_pStrValue);
+			else if (!m_pCfgVarsTemp[i].m_pStrValue && m_pCfgVars[i].m_pStrValue)
+				str_format(lineBuff, 512, "%s NULL -> %s", m_pCfgVars[i].m_pScriptName, m_pCfgVars[i].m_pStrValue);
+			else if (!m_pCfgVarsTemp[i].m_pStrValue && !m_pCfgVars[i].m_pStrValue)
+				str_format(lineBuff, 512, "%s NULL -> NULL", m_pCfgVars[i].m_pScriptName);
+		}
 		pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
 	}
 }
@@ -96,7 +112,12 @@ void CCfgVarBuffer::CfgVarBackup::Apply()
 		if (m_pCfgVars[i].m_Type == CFG_TYPE_INT)
 			*m_pCfgVars[i].m_pIntValue = m_pCfgVarsTemp[i].m_IntValue;
 		else 
-			str_copy(m_pCfgVars[i].m_pStrValue, m_pCfgVarsTemp[i].m_pStrValue, strlen(m_pCfgVarsTemp[i].m_pStrValue)+1);
+		{
+			if (!m_pCfgVarsTemp[i].m_pStrValue)
+				dbg_msg("CfgVarBuffer", "Error: cannot apply cfg backup for config variable '%s' -> NULL pointer string", m_pCfgVars[i].m_pScriptName);
+			else
+				str_copy(m_pCfgVars[i].m_pStrValue, m_pCfgVarsTemp[i].m_pStrValue, strlen(m_pCfgVarsTemp[i].m_pStrValue)+1);
+		}
 	}
 }
 
