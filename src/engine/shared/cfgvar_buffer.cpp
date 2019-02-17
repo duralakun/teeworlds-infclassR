@@ -183,6 +183,14 @@ bool CCfgVarBuffer::IsConfigVar(const char* pStr)
 
 void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
 {
+	char aBuff[256];
+	if (!pCfgName || pCfgName[0] == 0)
+		str_format(aBuff, 256, "Printing all config variables :");
+	else
+		str_format(aBuff, 256, "Printing all config variables containing '%s' :", pCfgName);
+	pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "- - - - - - - - - - - - - - - - - - - - - - - -");
+	pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuff);
+
 	// search for config vars that contain pCfgName and print them and their values - if pCfgName is NULL print all vars
 	for (int i = 0; i < m_CfgVarsNum; i++)
 	{

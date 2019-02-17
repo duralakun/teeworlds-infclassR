@@ -499,14 +499,6 @@ bool CConsole::Con_Exec(IResult *pResult, void *pUserData)
 
 bool CConsole::Con_PrintCfg(IResult *pResult, void *pUserData)
 {
-	char aBuff[256];
-	if (pResult->GetString(0)[0] == 0)
-		str_format(aBuff, 256, "Printing all config variables :");
-	else
-		str_format(aBuff, 256, "Printing all config variables containing '%s' :", pResult->GetString(0));
-	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", "- - - - - - - - - - - - - - - - - - - - - - - -");
-	((CConsole*)pUserData)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", aBuff);
-
 	CCfgVarBuffer::ConPrintCfg(((CConsole*)pUserData), pResult->GetString(0));
 	return true;
 }
@@ -770,8 +762,6 @@ CConsole::CConsole(int FlagMask)
 
 	Register("mod_command", "s?i", CFGFLAG_SERVER, ConModCommandAccess, this, "Specify command accessibility for moderators");
 	Register("mod_status", "", CFGFLAG_SERVER, ConModCommandStatus, this, "List all commands which are accessible for moderators");
-
-	//Register("testt", "", CFGFLAG_SERVER, CCfgVarBuffer::ConResetCfgAtNextRoundEnd_Start, this, "testt");
 
 	// TODO: this should disappear
 	#define MACRO_CONFIG_INT(Name,ScriptName,Def,Min,Max,Flags,Desc) \
