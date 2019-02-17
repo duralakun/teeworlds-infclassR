@@ -129,28 +129,109 @@ class CCharacter *CGameContext::GetPlayerChar(int ClientID)
 	return m_apPlayers[ClientID]->GetCharacter();
 }
 
-int CGameContext::GetZombieCount() {
-	int count = 0;
+int CGameContext::GetActivePlayerCount(){
+	
+	// returns how many players are currently playing and not spectating
+		int PlayerCount = 0;
+		int SpecCount = 0;
+		for(int i=0; i<MAX_CLIENTS; i++)
+		{
+			//COMPILER ERROR ‘class IServer’ has no member named ‘m_aClients’
+			if(Server()->m_aClients[i].m_State == CServer::CClient::STATE_INGAME)
+			{
+				if (m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
+					PlayerCount++;
+				else 
+					SpecCount++;
+			}
+		}
+		
+		m_NbActivePlayers = PlayerCount;
+		m_NbSpectators = SpecCount;
+
+		dbg_msg("infclass", "Active Players: %d -- Spectators: %d", m_NbActivePlayers, m_NbSpectators);
+		
+		return PlayerCount;
+}
+
+int CGameContext::GetSpectatorCount(){
+	
+	int PlayerCount = 0;
+	int SpecCount = 0;
+	for(int i=0; i<MAX_CLIENTS; i++)
+	{
+		
+		//COMPILER ERROR ‘class IServer’ has no member named ‘m_aClients’
+		if(Server()->m_aClients[i].m_State == CServer::CClient::STATE_INGAME && m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS)
+			SpecCount++;
+		else 
+			PlayerCount++;
+	}
+	
+	m_NbActivePlayers = PlayerCount;
+	m_NbSpectators = SpecCount;
+	
+	return SpecCount;
+}
+
+int CGameContext::GetHumanCount(){
+	
+	int humanCounter = 0;
+	int zombieCounter = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if (!m_apPlayers[i])
+			continue;
+		if (m_apPlayers[i]->IsHuman())
+			humanCounter++;
+		else
+			zombieCounter++;
+	}
+	m_NbHumans = humanCounter;
+	m_NbZombies = zombieCounter;
+	
+	dbg_msg("infclass", "#humans: %d -- #zombies: %d", m_NbHumans, m_NbZombies);
+	
+	return humanCounter;
+	
+}
+
+int CGameContext::GetZombieCount(){
+	
+	int humanCounter = 0;
+	int zombieCounter = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if (!m_apPlayers[i])
 			continue;
 		if (m_apPlayers[i]->IsZombie())
-			count++;
+			zombieCounter++;
+		else
+			humanCounter++;
 	}
-	return count;
+	
+	m_NbZombies = zombieCounter;
+	m_NbHumans = humanCounter;
+	
+	dbg_msg("infclass", "#humans: %d -- #zombies: %d", m_NbHumans, m_NbZombies);
+	
+	return zombieCounter;
+	
 }
 
-int CGameContext::GetZombieCount(int zombie_class) {
+int CGameContext::GetIsOfClassCount(int player_class) {
+	
 	int count = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if (!m_apPlayers[i])
 			continue;
-		if (m_apPlayers[i]->IsZombie() && m_apPlayers[i]->GetClass() == zombie_class)
+		if (m_apPlayers[i]->IsZombie() && m_apPlayers[i]->GetClass() == player_class)
 			count++;
 	}
 	return count;
+	
+	
 }
 
 int CGameContext::RandomZombieToWitch() {
@@ -1028,14 +1109,10 @@ void CGameContext::OnTick()
 	//if(world.paused) // make sure that the game object always updates
 	m_pController->Tick();
 
-	int NumActivePlayers = 0;
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if(m_apPlayers[i])
 		{
-			if(m_apPlayers[i]->GetTeam() != TEAM_SPECTATORS)
-				NumActivePlayers++;
-			
 			Server()->RoundStatistics()->UpdatePlayer(i, m_apPlayers[i]->GetTeam() == TEAM_SPECTATORS);
 			
 			m_apPlayers[i]->Tick();
@@ -1141,7 +1218,7 @@ void CGameContext::OnTick()
 		m_aHitSoundState[i] = 0;
 	}
 	
-	Server()->RoundStatistics()->UpdateNumberOfPlayers(NumActivePlayers);
+	Server()->RoundStatistics()->UpdateNumberOfPlayers(m_NbActivePlayers);
 	
 /* INFECTION MODIFICATION START ***************************************/
 	//Clean old dots
@@ -1377,6 +1454,10 @@ void CGameContext::OnClientConnected(int ClientID)
 	m_BroadcastStates[ClientID].m_Priority = BROADCAST_PRIORITY_LOWEST;
 	m_BroadcastStates[ClientID].m_PrevMessage[0] = 0;
 	m_BroadcastStates[ClientID].m_NextMessage[0] = 0;
+	
+	//Count players
+	GetActivePlayerCount(); //updates also spectators
+	GetHumanCount(); //updates also zombies
 }
 
 void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
@@ -1406,6 +1487,10 @@ void CGameContext::OnClientDrop(int ClientID, int Type, const char *pReason)
 	str_format(aBuf, sizeof(aBuf), "leave player='%d:%s'", ClientID, Server()->ClientName(ClientID));
 	Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 
+	//Count players
+	GetActivePlayerCount(); //updates also spectators
+	GetHumanCount(); //updates also zombies
+	
 	// InfClassR end
 }
 
@@ -1544,7 +1629,7 @@ void CGameContext::OnCallVote(void *pRawMsg, int ClientID)
 						int RoundCount = m_pController->GetRoundCount();
 						if (m_pController->IsRoundEndTime())
 							RoundCount++;
-						if (g_Config.m_InfMinRoundsForMapVote > RoundCount && Server()->GetActivePlayerCount() > 1)
+						if (g_Config.m_InfMinRoundsForMapVote > RoundCount && m_NbActivePlayers > 1)
 						{
 							char aBufVoteMap[128];
 							str_format(aBufVoteMap, sizeof(aBufVoteMap), "Each map must be played at least %i rounds before calling a map vote", g_Config.m_InfMinRoundsForMapVote);
@@ -3996,7 +4081,7 @@ bool CGameContext::ConWitch(IConsole::IResult *pResult, void *pUserData)
 	str_format(aBuf, sizeof(aBuf), "ConWitch() called");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "conwitch", aBuf);
 
-	if (pSelf->GetZombieCount(PLAYERCLASS_WITCH) >= MAX_WITCHES) {
+	if (pSelf->GetIsOfClassCount(PLAYERCLASS_WITCH) >= MAX_WITCHES) {
 		str_format(aBuf, sizeof(aBuf), "All witches are already here", MAX_WITCHES);
 		pSelf->SendChatTarget(ClientID, aBuf);
 		return true;
@@ -4308,7 +4393,7 @@ void CGameContext::TargetKilled()
 
 void CGameContext::FlagCollected()
 {
-	float t = (8-Server()->GetActivePlayerCount()) / 8.0f;
+	float t = (8-m_NbActivePlayers) / 8.0f;
 	if (t < 0.0f) 
 		t = 0.0f;
 
@@ -4380,20 +4465,16 @@ void CGameContext::List(int ClientID, const char* filter)
 	SendChatTarget(ClientID, buf);
 }
 
-void CGameContext::AddSpectatorCID(int ClientID)
-{
+void CGameContext::AddSpectatorCID(int ClientID) {
 	Server()->RemoveMapVotesForID(ClientID);
-	auto& vec = Server()->spectators_id;
-	if(!(std::find(vec.begin(), vec.end(), ClientID) != vec.end()))
-		vec.push_back(ClientID);
+	if(!(std::find(spectators_id.begin(), spectators_id.end(), ClientID) != spectators_id.end()))
+		spectators_id.push_back(ClientID);
 }
 
 void CGameContext::RemoveSpectatorCID(int ClientID) {
-	auto& vec = Server()->spectators_id;
-	vec.erase(std::remove(vec.begin(), vec.end(), ClientID), vec.end());
+	spectators_id.erase(std::remove(spectators_id.begin(), spectators_id.end(), ClientID), spectators_id.end());
 }
 
 bool CGameContext::IsSpectatorCID(int ClientID) {
-	auto& vec = Server()->spectators_id;
-	return std::find(vec.begin(), vec.end(), ClientID) != vec.end();
+	return std::find(spectators_id.begin(), spectators_id.end(), ClientID) != spectators_id.end();
 }

@@ -240,7 +240,7 @@ void IGameController::CycleMap(bool Forced)
 	if(!Forced && m_RoundCount < g_Config.m_SvRoundsPerMap-1)
 		return;
 
-	int PlayerCount = Server()->GetActivePlayerCount();
+	int PlayerCount = GameServer()->m_NbActivePlayers;
 
 	CMapRotationInfo pMapRotationInfo;
 	GetMapRotationInfo(&pMapRotationInfo);
@@ -349,6 +349,9 @@ void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 
 int IGameController::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
+	//update number of humans and zombies
+	GameServer()->GetHumanCount(); //updates also zombies
+	
 	// do scoreing
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;

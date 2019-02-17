@@ -757,6 +757,10 @@ void CPlayer::SetClass(int newClass)
 	{
 		m_pCharacter->SetClass(newClass);
 	}
+	
+	//update number of humans and zombies
+	GameServer()->GetHumanCount(); //updates also zombies
+	
 }
 
 int CPlayer::GetOldClass()

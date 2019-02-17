@@ -43,7 +43,7 @@ void CHeroFlag::FindPosition()
 void CHeroFlag::SetCoolDown()
 {
 	// Set cooldown for next flag depending on how many players are online
-	int PlayerCount = Server()->GetActivePlayerCount();
+	int PlayerCount = GameServer()->m_NbActivePlayers;
 	if (PlayerCount <= 1)
 	{
 		// only 1 player on, let him find as many flags as he wants
@@ -70,7 +70,7 @@ void CHeroFlag::GiveGift(CCharacter* pHero)
   
 	if (g_Config.m_InfTurretEnable) 
 	{
-		if (Server()->GetActivePlayerCount() > 2)
+		if (GameServer()->m_NbActivePlayers > 2)
 		{
 			if (pHero->m_TurretCount == 0)
 				pHero->GiveWeapon(WEAPON_HAMMER, -1);
