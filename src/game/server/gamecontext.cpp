@@ -4383,12 +4383,7 @@ void CGameContext::TargetKilled()
 {
 	m_TargetToKill = -1;
 	
-	int PlayerCounter = 0;
-	CPlayerIterator<PLAYERITER_INGAME> Iter(m_apPlayers);
-	while(Iter.Next())
-		PlayerCounter++;
-	
-	m_TargetToKillCoolDown = Server()->TickSpeed()*(10 + 3*max(0, 16 - PlayerCounter));
+	m_TargetToKillCoolDown = Server()->TickSpeed()*(10 + 3*max(0, 16 - m_NbActivePlayers));
 }
 
 void CGameContext::FlagCollected()
