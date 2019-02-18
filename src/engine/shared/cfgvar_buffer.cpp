@@ -154,8 +154,7 @@ void CCfgVarBuffer::Init()
 	// read all config variables and save their information to m_pCfgVars
 	#define MACRO_CFGVAR_SAVE_NAME(ScriptName) \
 	{ \
-		int i = strlen(#ScriptName); \
-		i++; \
+		int i = strlen(#ScriptName) + 1; \
 		m_pCfgVars[tCount].m_pScriptName = new char[i]; \
 		m_pCfgVars[tCount].m_ScriptNameLength = i; \
 		str_copy(m_pCfgVars[tCount].m_pScriptName, #ScriptName, i); \
@@ -183,6 +182,7 @@ void CCfgVarBuffer::Init()
 
 	#undef MACRO_CONFIG_INT
 	#undef MACRO_CONFIG_STR
+	#undef MACRO_CFGVAR_SAVE_NAME
 }
 
 void CCfgVarBuffer::RegisterConsoleCommands(CConsole *pConsole)
@@ -197,6 +197,7 @@ void CCfgVarBuffer::RegisterConsoleCommands(CConsole *pConsole)
 
 bool CCfgVarBuffer::IsConfigVar(const char* pStr)
 {
+	if (!pStr) return false;
 	for (int i = 0; i < m_CfgVarsNum; i++)
 	{
 		if (str_comp_nocase(m_pCfgVars[i].m_pScriptName, pStr) == 0) return true;
@@ -227,8 +228,13 @@ void CCfgVarBuffer::ConPrintCfg(CConsole* pConsole, const char *pCfgName)
 		{
 			if (strstr(m_pCfgVars[i].m_pScriptName, "password"))  // dont print passwords
 				str_format(lineBuff, 512, "%s *****************", m_pCfgVars[i].m_pScriptName);
-			else				
-				str_format(lineBuff, 512, "%s %s", m_pCfgVars[i].m_pScriptName, m_pCfgVars[i].m_pStrValue);
+			else
+			{
+				if (m_pCfgVars[i].m_pStrValue)		
+					str_format(lineBuff, 512, "%s %s", m_pCfgVars[i].m_pScriptName, m_pCfgVars[i].m_pStrValue);
+				else
+					str_format(lineBuff, 512, "%s NULL", m_pCfgVars[i].m_pScriptName);
+			}
 		}
 		pConsole->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Console", lineBuff);
 	}
