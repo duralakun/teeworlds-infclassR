@@ -18,6 +18,8 @@
 #include "gamecontroller.h"
 #include "gameworld.h"
 #include "player.h"
+#include <game/server/classes.h>
+#include <engine/shared/weapon_types.h>
 
 #ifndef CONF_NOGEOLOCATION
 #include <infclassr/geolocation.h>
@@ -78,6 +80,7 @@ class CGameContext : public IGameServer
 	int m_TargetToKill;
 	int m_TargetToKillCoolDown;
 	int m_HeroGiftCooldown;
+	int m_NerfFactor;
 
 	#ifndef CONF_NOGEOLOCATION
 	Geolocation* geolocation;
@@ -173,7 +176,37 @@ public:
 	CHeap *m_pVoteOptionHeap;
 	CVoteOptionServer *m_pVoteOptionFirst;
 	CVoteOptionServer *m_pVoteOptionLast;
-
+	
+	// weapon configs
+	std::vector<int> m_DefaultWeaponConfig;
+	void NerfWeapons();
+	virtual void SaveWeaponConfig();
+	virtual void ResetWeaponConfig(std::vector<int> value);
+	
+	virtual void InitializeClassAvailability();
+	
+	virtual void InitializeWeaponParams(bool refresh);
+	
+	virtual int GetFireDelay(int WID);
+	virtual void SetFireDelay(int WID, int Time);
+	
+	virtual int GetAmmoRegenTime(int WID);
+	virtual void SetAmmoRegenTime(int WID, int Time);
+	
+	virtual int GetMaxAmmo(int WID);
+	virtual void SetMaxAmmo(int WID, int n);
+	
+	virtual int GetClassAvailability(int CID);
+	virtual void SetClassAvailability(int CID, int n);
+	
+	
+	int m_InfAmmoRegenTime[NB_INFWEAPON];
+	int m_InfFireDelay[NB_INFWEAPON];
+	int m_InfMaxAmmo[NB_INFWEAPON];
+	int m_InfClassAvailability[NB_PLAYERCLASS];
+	
+	
+	
 	// helper functions
 	void CreateDamageInd(vec2 Pos, float AngleMod, int Amount);
 	void CreateExplosion(vec2 Pos, int Owner, int Weapon, bool NoDamage, int TakeDamageMode = TAKEDAMAGEMODE_NOINFECTION, float DamageFactor = 1.0f);

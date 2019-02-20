@@ -1,5 +1,6 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.				*/
+#include "gamecontext.h"
 #include <new>
 #include <base/math.h>
 #include <engine/shared/config.h>
@@ -8,7 +9,6 @@
 #include <engine/storage.h>
 #include <engine/server/roundstatistics.h>
 #include <engine/server/sql_server.h>
-#include "gamecontext.h"
 #include <game/version.h>
 #include <game/collision.h>
 #include <game/gamecore.h>
@@ -50,6 +50,7 @@ void CGameContext::Construct(int Resetting)
 	m_TargetToKill = -1;
 	m_TargetToKillCoolDown = 0;
 	m_HeroGiftCooldown = 0;
+	m_NerfFactor = 100;
 	
 	m_ChatResponseTargetID = -1;
 
@@ -58,6 +59,9 @@ void CGameContext::Construct(int Resetting)
 	
 	m_FunRound = false;
 	m_FunRoundsPassed = 0;
+	
+	InitializeClassAvailability();
+	InitializeWeaponParams(false);
 	
 	#ifndef CONF_NOGEOLOCATION
 	geolocation = new Geolocation("GeoLite2-Country.mmdb");
@@ -174,7 +178,7 @@ int CGameContext::RandomZombieToWitch() {
 
 void CGameContext::SetAvailabilities(std::vector<int> value) {
 	if (value.empty())
-		value = std::vector<int>(10); //increased by 1 human class from 9 to 10
+		value = std::vector<int>(10);
 	g_Config.m_InfEnableBiologist = value[0];
 	g_Config.m_InfEnableEngineer = value[1];
 	g_Config.m_InfEnableHero = value[2];
@@ -201,6 +205,251 @@ void CGameContext::SetProbabilities(std::vector<int> value) {
 	g_Config.m_InfGhoulThreshold = value[8];
 	g_Config.m_InfGhoulStomachSize = value[9];
 }
+
+void CGameContext::NerfWeapons()
+{
+	//Simple nerf without formula (TODO)
+	m_NerfFactor = 100;
+	g_Config.m_InfMedicShotgunBlowback = 4;		//Force
+	g_Config.m_InfShotgunFireDelay = 700;		//milli-seconds
+	g_Config.m_InfScientistMineBaseDmg = 1;		//hearts
+	g_Config.m_InfMineLimit = 1;
+	g_Config.m_InfLooperLaserDmg = 4; 			//hearts
+	g_Config.m_InfSlowMotionWallDuration = 20; 	//centi-seconds
+	g_Config.m_InfLooperBarrierLifeSpan = 20; 	//seconds
+	g_Config.m_InfBarrierLifeSpan = 13; 		//seconds
+	g_Config.m_InfSoldierBombDmgFactor = 5; 	//10 == grenade dmg
+	g_Config.m_InfSniperLockedLaserDmg = 16; 	//hearts
+	g_Config.m_InfSniperLaserBaseDmg = 6; 		//hearts
+	g_Config.m_InfMercGunAmmoRegenTime = 300; 	//milli-seconds
+	g_Config.m_InfMercMaxGunAmmo = 30; 			// bullets
+	g_Config.m_InfBarrierDamage = 7; 			// hearts
+	g_Config.m_InfNinjaJump = 1;
+
+	bool refresh = true;
+	InitializeWeaponParams(refresh);
+}
+
+void CGameContext::SaveWeaponConfig() {
+	
+	std::vector<int> configVector = {
+		//if order is changed, change it also in ResetWeaponConfig(), errors will be fatal!
+		g_Config.m_InfMedicShotgunBlowback,
+		g_Config.m_InfShotgunFireDelay,
+		g_Config.m_InfScientistMineBaseDmg,
+		g_Config.m_InfMineLimit,
+		g_Config.m_InfLooperLaserDmg,
+		g_Config.m_InfSlowMotionWallDuration,
+		g_Config.m_InfLooperBarrierLifeSpan,
+		g_Config.m_InfBarrierLifeSpan,
+		g_Config.m_InfSoldierBombDmgFactor,
+		g_Config.m_InfSniperLockedLaserDmg,
+		g_Config.m_InfSniperLaserBaseDmg,
+		g_Config.m_InfMercGunAmmoRegenTime,
+		g_Config.m_InfMercMaxGunAmmo,
+		g_Config.m_InfBarrierDamage,
+		g_Config.m_InfNinjaJump
+	};
+	
+	m_DefaultWeaponConfig = configVector;
+	
+}
+
+void CGameContext::ResetWeaponConfig(std::vector<int> value) {
+	
+	g_Config.m_InfMedicShotgunBlowback = value[0];
+	g_Config.m_InfShotgunFireDelay = value[1];
+	g_Config.m_InfScientistMineBaseDmg = value[2];
+	g_Config.m_InfMineLimit = value[3];
+	g_Config.m_InfLooperLaserDmg = value[4];
+	g_Config.m_InfSlowMotionWallDuration = value[5];
+	g_Config.m_InfLooperBarrierLifeSpan = value[6];
+	g_Config.m_InfBarrierLifeSpan = value[7];
+	g_Config.m_InfSoldierBombDmgFactor = value[8];
+	g_Config.m_InfSniperLockedLaserDmg = value[9];
+	g_Config.m_InfSniperLaserBaseDmg = value[10];
+	g_Config.m_InfMercGunAmmoRegenTime = value[11];
+	g_Config.m_InfMercMaxGunAmmo = value[12];
+	g_Config.m_InfBarrierDamage = value[13];
+	g_Config.m_InfNinjaJump  = value[14];
+	
+	bool refresh = true;
+	InitializeWeaponParams(refresh);
+}
+
+void CGameContext::InitializeClassAvailability()
+{
+	SetClassAvailability(PLAYERCLASS_ENGINEER, 2);
+	SetClassAvailability(PLAYERCLASS_SOLDIER, 2);
+	SetClassAvailability(PLAYERCLASS_MERCENARY, 2);
+	SetClassAvailability(PLAYERCLASS_SNIPER, 2);
+	SetClassAvailability(PLAYERCLASS_NINJA, 2);
+	SetClassAvailability(PLAYERCLASS_MEDIC, 2);
+	SetClassAvailability(PLAYERCLASS_HERO, 2);
+	SetClassAvailability(PLAYERCLASS_SCIENTIST, 2);
+	SetClassAvailability(PLAYERCLASS_BIOLOGIST, 2);
+	SetClassAvailability(PLAYERCLASS_LOOPER, 2);
+	
+	SetClassAvailability(PLAYERCLASS_SMOKER, 1);
+	SetClassAvailability(PLAYERCLASS_HUNTER, 1);
+	SetClassAvailability(PLAYERCLASS_BAT, 1);
+	SetClassAvailability(PLAYERCLASS_GHOST, 1);
+	SetClassAvailability(PLAYERCLASS_SPIDER, 1);
+	SetClassAvailability(PLAYERCLASS_GHOUL, 1);
+	SetClassAvailability(PLAYERCLASS_SLUG, 1);
+	SetClassAvailability(PLAYERCLASS_BOOMER, 1);
+	SetClassAvailability(PLAYERCLASS_VOODOO, 1);
+	SetClassAvailability(PLAYERCLASS_UNDEAD, 1);
+	SetClassAvailability(PLAYERCLASS_WITCH, 1);
+}
+
+
+
+void CGameContext::InitializeWeaponParams(bool refresh)
+{
+	// Here parameters are refreshed
+	if (refresh) 
+	{
+		
+		//if(g_Config.m_InfShotgunFireDelay == 0)
+		//	throw std::invalid_argument( "Config var is not initialized" );
+		
+		SetFireDelay(INFWEAPON_SHOTGUN, (2*g_Config.m_InfShotgunFireDelay) );
+		
+		SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+		SetFireDelay(INFWEAPON_HERO_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+		SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+		
+		SetAmmoRegenTime(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercGunAmmoRegenTime);
+		
+		SetMaxAmmo(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercMaxGunAmmo);
+		
+		return;
+	}
+	
+	SetFireDelay(INFWEAPON_NONE, 0);
+	SetFireDelay(INFWEAPON_HAMMER, 125);
+	SetFireDelay(INFWEAPON_GUN, 125);
+	SetFireDelay(INFWEAPON_SHOTGUN, (2*g_Config.m_InfShotgunFireDelay) );
+	SetFireDelay(INFWEAPON_GRENADE, 500);
+	SetFireDelay(INFWEAPON_RIFLE, 800);
+	SetFireDelay(INFWEAPON_NINJA, 800);
+	SetFireDelay(INFWEAPON_MEDIC_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_HERO_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_BIOLOGIST_SHOTGUN, g_Config.m_InfShotgunFireDelay);
+	SetFireDelay(INFWEAPON_ENGINEER_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_SOLDIER_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_SCIENTIST_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_SCIENTIST_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_MEDIC_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_MEDIC_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_BIOLOGIST_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_LOOPER_RIFLE, 250);
+	SetFireDelay(INFWEAPON_LOOPER_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_HERO_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_HERO_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_SNIPER_RIFLE, GetFireDelay(INFWEAPON_RIFLE));
+	SetFireDelay(INFWEAPON_NINJA_HAMMER, GetFireDelay(INFWEAPON_NINJA));
+	SetFireDelay(INFWEAPON_NINJA_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_MERCENARY_GRENADE, GetFireDelay(INFWEAPON_GRENADE));
+	SetFireDelay(INFWEAPON_MERCENARY_GUN, 50);
+	
+	SetAmmoRegenTime(INFWEAPON_NONE, 0);
+	SetAmmoRegenTime(INFWEAPON_HAMMER, 0);
+	SetAmmoRegenTime(INFWEAPON_GUN, 500);
+	SetAmmoRegenTime(INFWEAPON_SHOTGUN, 0);
+	SetAmmoRegenTime(INFWEAPON_GRENADE, 0);
+	SetAmmoRegenTime(INFWEAPON_RIFLE, 0);
+	SetAmmoRegenTime(INFWEAPON_NINJA, 0);
+	
+	SetAmmoRegenTime(INFWEAPON_ENGINEER_RIFLE, 6000);
+	SetAmmoRegenTime(INFWEAPON_SOLDIER_GRENADE, 7000);
+	SetAmmoRegenTime(INFWEAPON_SCIENTIST_RIFLE, 6000);
+	SetAmmoRegenTime(INFWEAPON_SCIENTIST_GRENADE, 10000);
+	SetAmmoRegenTime(INFWEAPON_MEDIC_GRENADE, 0);
+	SetAmmoRegenTime(INFWEAPON_MEDIC_RIFLE, 6000);
+	SetAmmoRegenTime(INFWEAPON_MEDIC_SHOTGUN, 750);
+	SetAmmoRegenTime(INFWEAPON_HERO_SHOTGUN, 750);
+	SetAmmoRegenTime(INFWEAPON_HERO_RIFLE, 3000);
+	SetAmmoRegenTime(INFWEAPON_HERO_GRENADE, 3000);
+	SetAmmoRegenTime(INFWEAPON_SNIPER_RIFLE, 2000);
+	SetAmmoRegenTime(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercGunAmmoRegenTime);
+	SetAmmoRegenTime(INFWEAPON_MERCENARY_GRENADE, 5000);
+	SetAmmoRegenTime(INFWEAPON_NINJA_HAMMER, 0);
+	SetAmmoRegenTime(INFWEAPON_NINJA_GRENADE, 15000);
+	SetAmmoRegenTime(INFWEAPON_BIOLOGIST_RIFLE, 175);
+	SetAmmoRegenTime(INFWEAPON_BIOLOGIST_SHOTGUN, 675);
+	SetAmmoRegenTime(INFWEAPON_LOOPER_RIFLE, 750);
+	SetAmmoRegenTime(INFWEAPON_LOOPER_GRENADE, 5000);
+	
+	SetMaxAmmo(INFWEAPON_NONE, -1);
+	SetMaxAmmo(INFWEAPON_HAMMER, -1);
+	SetMaxAmmo(INFWEAPON_GUN, 10);
+	SetMaxAmmo(INFWEAPON_SHOTGUN, 10);
+	SetMaxAmmo(INFWEAPON_GRENADE, 10);
+	SetMaxAmmo(INFWEAPON_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_NINJA, 10);
+	SetMaxAmmo(INFWEAPON_ENGINEER_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_SCIENTIST_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_SCIENTIST_GRENADE, 3);
+	SetMaxAmmo(INFWEAPON_SOLDIER_GRENADE, 10);
+	SetMaxAmmo(INFWEAPON_MEDIC_GRENADE, 10);
+	SetMaxAmmo(INFWEAPON_MEDIC_RIFLE, 1);
+	SetMaxAmmo(INFWEAPON_MEDIC_SHOTGUN, 10);
+	SetMaxAmmo(INFWEAPON_HERO_SHOTGUN, 10);
+	SetMaxAmmo(INFWEAPON_HERO_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_HERO_GRENADE, 10);
+	SetMaxAmmo(INFWEAPON_SNIPER_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_NINJA_HAMMER, -1);
+	SetMaxAmmo(INFWEAPON_NINJA_GRENADE, 5);
+	SetMaxAmmo(INFWEAPON_MERCENARY_GUN, g_Config.m_InfMercMaxGunAmmo);
+	SetMaxAmmo(INFWEAPON_MERCENARY_GRENADE, 8);
+	SetMaxAmmo(INFWEAPON_BIOLOGIST_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_BIOLOGIST_SHOTGUN, 10);
+	SetMaxAmmo(INFWEAPON_LOOPER_RIFLE, 10);
+	SetMaxAmmo(INFWEAPON_LOOPER_GRENADE, 10);
+}
+
+int CGameContext::GetFireDelay(int WID)
+{
+	return m_InfFireDelay[WID];
+}
+
+void CGameContext::SetFireDelay(int WID, int Time)
+{
+	m_InfFireDelay[WID] = Time;
+}
+
+int CGameContext::GetAmmoRegenTime(int WID)
+{
+	return m_InfAmmoRegenTime[WID];
+}
+
+void CGameContext::SetAmmoRegenTime(int WID, int Time)
+{
+	m_InfAmmoRegenTime[WID] = Time;
+}
+
+int CGameContext::GetMaxAmmo(int WID)
+{
+	return m_InfMaxAmmo[WID];
+}
+
+void CGameContext::SetMaxAmmo(int WID, int n)
+{
+	m_InfMaxAmmo[WID] = n;
+}
+
+int CGameContext::GetClassAvailability(int CID)
+{
+	return m_InfClassAvailability[CID];
+}
+
+void CGameContext::SetClassAvailability(int CID, int n)
+{
+	m_InfClassAvailability[CID] = n;
+}
+
 
 void CGameContext::CreateDamageInd(vec2 Pos, float Angle, int Amount)
 {
@@ -939,6 +1188,15 @@ void CGameContext::OnTick()
 	if(m_HeroGiftCooldown > 0)
 		m_HeroGiftCooldown--;
 
+	// Low player count leads to nerfed weapons
+	if (Server()->GetActivePlayerCount() <= 3)
+	{
+		SaveWeaponConfig();
+		NerfWeapons();
+	} 
+	else 
+		ResetWeaponConfig(m_DefaultWeaponConfig);
+	
 	if(m_TargetToKillCoolDown > 0)
 		m_TargetToKillCoolDown--;
 	

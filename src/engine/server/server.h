@@ -6,7 +6,6 @@
 #include <engine/server.h>
 #include <engine/server/netsession.h>
 #include <engine/server/roundstatistics.h>
-#include <game/server/classes.h>
 #include <game/voting.h>
 
 /* DDNET MODIFICATION START *******************************************/
@@ -303,12 +302,7 @@ public:
 	void SnapSetStaticsize(int ItemType, int Size);
 	
 /* INFECTION MODIFICATION START ***************************************/
-public:
 	int m_InfClassChooser;
-	int m_InfAmmoRegenTime[NB_INFWEAPON];
-	int m_InfFireDelay[NB_INFWEAPON];
-	int m_InfMaxAmmo[NB_INFWEAPON];
-	int m_InfClassAvailability[NB_PLAYERCLASS];
 
 public:
 	virtual int IsClientInfectedBefore(int ClientID);
@@ -328,18 +322,6 @@ public:
 	
 	virtual const char* GetClientLanguage(int ClientID);
 	virtual void SetClientLanguage(int ClientID, const char* pLanguage);
-	
-	virtual int GetFireDelay(int WID);
-	virtual void SetFireDelay(int WID, int Time);
-	
-	virtual int GetAmmoRegenTime(int WID);
-	virtual void SetAmmoRegenTime(int WID, int Time);
-	
-	virtual int GetMaxAmmo(int WID);
-	virtual void SetMaxAmmo(int WID, int n);
-	
-	virtual int GetClassAvailability(int CID);
-	virtual void SetClassAvailability(int CID, int n);
 	
 	virtual int GetClientNbRound(int ClientID);
 	

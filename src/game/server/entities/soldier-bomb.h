@@ -23,6 +23,7 @@ private:
 	int m_StartTick;
 	array<int> m_IDBomb;
 	int m_nbBomb;
+	float m_DmgRadius;
 	
 public:
 	float m_DetectionRadius;

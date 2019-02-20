@@ -6,6 +6,12 @@
 #include "white-hole.h"
 #include "growingexplosion.h"
 
+const float m_RadiusGrowthRate = 6.0f; // how fast the hole growths when it is created
+const float m_PlayerDrag = 0.9f;
+// visual
+const float m_ParticleStartSpeed = 1.1f; ; 
+const float m_ParticleAcceleration = 1.01f;
+
 CWhiteHole::CWhiteHole(CGameWorld *pGameWorld, vec2 CenterPos, int OwnerClientID)
 : CEntity(pGameWorld, CGameWorld::ENTTYPE_WHITE_HOLE)
 {
@@ -15,7 +21,8 @@ CWhiteHole::CWhiteHole(CGameWorld *pGameWorld, vec2 CenterPos, int OwnerClientID
 	m_Owner = OwnerClientID;
 	m_LifeSpan = Server()->TickSpeed()*g_Config.m_InfWhiteHoleLifeSpan;
 	m_Radius = 0.0f;
-	isDieing = false;
+	m_IsDieing = false;
+
 	m_PlayerPullStrength = g_Config.m_InfWhiteHolePullStrength/10.0f;
 
 	m_NumParticles = g_Config.m_InfWhiteHoleNumParticles;
@@ -116,7 +123,7 @@ void CWhiteHole::Snap(int SnappingClient)
 	// Draw full particle effect - if anti ping is not set to true
 	for(int i=0; i<m_NumParticles; i++)
 	{
-		if (!isDieing && distance(m_ParticlePos[i], m_Pos) > m_Radius) continue; // start animation
+		if (!m_IsDieing && distance(m_ParticlePos[i], m_Pos) > m_Radius) continue; // start animation
 
 		CNetObj_Projectile *pObj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, m_IDs[i], sizeof(CNetObj_Projectile)));
 		if(pObj)
@@ -197,7 +204,7 @@ void CWhiteHole::Tick()
 		if (m_LifeSpan < m_ParticleStopTickTime) // shrink radius
 		{
 			m_Radius = m_LifeSpan/(float)m_ParticleStopTickTime * g_Config.m_InfWhiteHoleRadius;
-			isDieing = true;
+			m_IsDieing = true;
 		}
 		else if (m_Radius < g_Config.m_InfWhiteHoleRadius) // grow radius
 		{
