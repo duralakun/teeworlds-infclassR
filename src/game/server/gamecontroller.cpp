@@ -317,7 +317,15 @@ void IGameController::PostReset()
 	{
 		if(GameServer()->m_apPlayers[i])
 		{
+			//respawn
+			GameServer()->m_apPlayers[i]->KillCharacter();
+			
+			//Clear all ids from the pool
+			Server()->ResetAllIDs();
+			
 			GameServer()->m_apPlayers[i]->Respawn();
+			
+
 /* INFECTION MODIFICATION START ***************************************/
 			//~ GameServer()->m_apPlayers[i]->m_Score = 0;
 			//~ GameServer()->m_apPlayers[i]->m_ScoreStartTick = Server()->Tick();

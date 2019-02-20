@@ -47,6 +47,7 @@ public:
 private:
 	void Reset();
 	void RemoveEntities();
+	void PurgeEntities();
 
 	CEntity *m_pNextTraverseEntity;
 	CEntity *m_apFirstEntityTypes[NUM_ENTTYPES];

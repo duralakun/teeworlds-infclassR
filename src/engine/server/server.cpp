@@ -2758,6 +2758,10 @@ void CServer::SnapFreeID(int ID)
 	m_IDPool.FreeID(ID);
 }
 
+void CServer::ResetAllIDs()
+{
+	m_IDPool.Reset();
+}
 
 void *CServer::SnapNewItem(int Type, int ID, int Size)
 {
