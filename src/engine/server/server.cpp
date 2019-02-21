@@ -214,7 +214,7 @@ bool CServer::ConGetIDCount(IConsole::IResult *pResult, void *pUser)
 	int IDCount = pThis->m_IDPool.GetIDCount();
 	int IDPercent = (int)(((float)IDCount/pThis->m_IDPool.GetMaxIDs())*100);
 	char aBuff[128];
-	str_format(aBuff, sizeof(aBuff), "IDCount: %i Percent: %i%", IDCount, IDPercent);
+	str_format(aBuff, sizeof(aBuff), "IDCount: %i - InPercent: %i%%", IDCount, IDPercent);
 	pThis->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "Server", aBuff);
 	return true;
 }
